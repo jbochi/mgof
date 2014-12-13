@@ -19,9 +19,9 @@ def tukey(key, k=1):
     return tukey_script(keys=[key], args=[k])
 
 
-def window_anomaly(key, n_bins=10, window_size=100):
+def window_anomaly(key, n_bins=10, window_size=100, confidence=95):
     """Returns the probability that the last window is anomalous"""
-    return window_anomaly_script(keys=[key], args=[n_bins, window_size])
+    return window_anomaly_script(keys=[key], args=[n_bins, window_size, confidence])
 
 
 def main():
@@ -29,7 +29,7 @@ def main():
     print("Valid distribution (tukey): ", tukey(key))
     test, anomaly = window_anomaly(key)
     print("Chi-squared test that the last window is anomaly: ", test)
-    print("Anomaly: ", anomaly != 0)
+    print("Anomaly (confidence 95%): ", anomaly != 0)
 
 
 if __name__ == "__main__":

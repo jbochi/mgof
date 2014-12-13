@@ -1,8 +1,9 @@
 local key = KEYS[1]
 local n_bins = tonumber(ARGV[1]) or 10
 local w_size = tonumber(ARGV[2]) or 60
-local confidence = 0.99
-local chi_square = {[0.99]={[9]=23.21}}
+local confidence = tonumber(ARGV[3]) or 99
+local chi_square = {[99]={6.63, 9.21, 11.34, 13.28, 15.09, 16.81, 18.48, 20.09, 21.67},
+                    [95]={3.84, 5.99,  7.81,  9.49, 11.07, 12.59, 14.07, 15.51, 16.92}}
 
 local create_classifier = function(time_series, n_bins)
   local min
