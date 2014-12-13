@@ -32,17 +32,19 @@ local create_bin_classifier = function(time_series, n_bins)
   return classifier
 end
 
-local distribution = function(time_series, n_bins, classifier)
+local distribution = function(time_series, n_bins, classifier, offset, size)
+  offset = offset or 1
+  size = size or (#time_series - offset + 1)
   local p = {}
   for i = 1, n_bins do
     p[i] = 0
   end
-  for i = 1, #time_series do
+  for i = offset, offset + size - 1 do
     local bin = classifier(time_series[i])
     p[bin] = p[bin] + 1
   end
   for i = 1, n_bins do
-    p[i] = p[i] / #time_series
+    p[i] = p[i] / size
   end
   return p
 end
@@ -83,10 +85,9 @@ local chi_square_test = function(test_value, k, confidence)
 end
 
 local elements = time_series_to_values(redis.call('ZRANGEBYSCORE', key, '-inf', '+inf'))
-local window   = time_series_to_values(redis.call('ZREVRANGEBYSCORE', key, '+inf', '-inf', 'LIMIT', 0, w_size))
 local classifier = create_bin_classifier(elements, n_bins)
 local p = distribution(elements, n_bins, classifier)
-local p_observed = distribution(window, n_bins, classifier)
+local p_observed = distribution(elements, n_bins, classifier, #elements - w_size, w_size)
 local test_value = chi_square_test_value(p_observed, p)
 local anomaly = chi_square_test(test_value, n_bins - 1, confidence)
 
