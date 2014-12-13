@@ -15,8 +15,11 @@ if #elements < 4 then
 end
 
 table.sort(elements)
+
 local q1 = elements[math.floor(#elements / 4)]
 local q3 = elements[math.floor(#elements / 4 * 3)]
+
 local lt = q1 - k * (q3 - q1)
 local ut = q3 + k * (q3 - q1)
+
 return {tostring(lt), tostring(ut)}
