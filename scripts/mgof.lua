@@ -57,6 +57,7 @@ end
 
 local relative_entropy = function(q, p)
   local total = 0
+  debug("bin", "q[i]", "p[i]", "running sum")
   for i = 1, #q do
     if q[i] > 0 then
       total = total + q[i] * math.log(q[i] / p[i])
