@@ -84,11 +84,16 @@ local chi_square_test = function(test_value, k, confidence)
   if test_value > cdf then return 1 else return 0 end
 end
 
+local mgof_last_window = function(elements, classifier)
+  local p = distribution(elements, n_bins, classifier)
+  local p_observed = distribution(elements, n_bins, classifier, #elements - w_size, w_size)
+  local test_value = chi_square_test_value(p_observed, p)
+  local anomaly = chi_square_test(test_value, n_bins - 1, confidence)
+  return {anomaly, tostring(test_value)}
+end
+
 local elements = time_series_to_values(redis.call('ZRANGEBYSCORE', key, '-inf', '+inf'))
 local classifier = create_bin_classifier(elements, n_bins)
-local p = distribution(elements, n_bins, classifier)
-local p_observed = distribution(elements, n_bins, classifier, #elements - w_size, w_size)
-local test_value = chi_square_test_value(p_observed, p)
-local anomaly = chi_square_test(test_value, n_bins - 1, confidence)
 
-return {tostring(test_value), anomaly}
+
+return mgof_last_window(elements, classifier)

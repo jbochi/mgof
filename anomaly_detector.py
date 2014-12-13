@@ -27,8 +27,8 @@ def window_anomaly(key, n_bins=10, window_size=100, confidence=95, debug=False):
 def main():
     key = "load"
     print("Valid internval (tukey): ", tukey(key))
-    test, anomaly = window_anomaly(key)
-    print("Chi-squared test for last window being anomalous: ", test)
+    anomaly, test_value = window_anomaly(key)
+    print("Chi-squared test for last window being anomalous: ", test_value)
     print("Anomaly (confidence 95%): ", anomaly != 0)
 
 
