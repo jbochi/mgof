@@ -19,9 +19,9 @@ def tukey(key, k=1):
     return tukey_script(keys=[key], args=[k])
 
 
-def window_anomaly(key, n_bins=10, window_size=100, confidence=95):
+def window_anomaly(key, n_bins=10, window_size=100, confidence=95, debug=False):
     """Returns the probability that the last window is anomalous"""
-    return window_anomaly_script(keys=[key], args=[n_bins, window_size, confidence])
+    return window_anomaly_script(keys=[key], args=[n_bins, window_size, confidence, debug])
 
 
 def main():

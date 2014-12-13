@@ -2,8 +2,15 @@ local key = KEYS[1]
 local n_bins = tonumber(ARGV[1]) or 10
 local w_size = tonumber(ARGV[2]) or 60
 local confidence = tonumber(ARGV[3]) or 99
+local debug_script = string.lower(ARGV[4]) == "true"
 local chi_square = {[99]={6.63, 9.21, 11.34, 13.28, 15.09, 16.81, 18.48, 20.09, 21.67},
                     [95]={3.84, 5.99,  7.81,  9.49, 11.07, 12.59, 14.07, 15.51, 16.92}}
+
+local debug = function(...)
+  if debug_script then
+    print(...)
+  end
+end
 
 local create_classifier = function(time_series, n_bins)
   local min
@@ -20,8 +27,8 @@ local create_classifier = function(time_series, n_bins)
   local classifier = function(value)
     return math.max(1, math.ceil((value - min) / step_size))
   end
-  print("MAX", "MIN", "STEP")
-  print(max, min, step_size)
+  debug("MAX", "MIN", "STEP")
+  debug(max, min, step_size)
   return classifier
 end
 
@@ -54,7 +61,7 @@ local relative_entropy = function(q, p)
     if q[i] > 0 then
       total = total + q[i] * math.log(q[i] / p[i])
     end
-    print(i, tostring(q[i]), tostring(p[i]), tostring(total))
+    debug(i, tostring(q[i]), tostring(p[i]), tostring(total))
   end
   return total
 end
