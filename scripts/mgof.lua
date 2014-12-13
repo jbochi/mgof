@@ -12,7 +12,7 @@ local debug = function(...)
   end
 end
 
-local create_classifier = function(time_series, n_bins)
+local create_bin_classifier = function(time_series, n_bins)
   local min
   local max
   for i = 1, #time_series do
@@ -83,7 +83,7 @@ end
 
 local elements = time_series_to_values(redis.call('ZRANGEBYSCORE', key, '-inf', '+inf'))
 local window   = time_series_to_values(redis.call('ZREVRANGEBYSCORE', key, '+inf', '-inf', 'LIMIT', 0, w_size))
-local classifier = create_classifier(elements, n_bins)
+local classifier = create_bin_classifier(elements, n_bins)
 local p = distribution(elements, n_bins, classifier)
 local p_observed = distribution(window, n_bins, classifier)
 local test_value = chi_square_test_value(p_observed, p)
