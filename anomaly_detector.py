@@ -16,7 +16,7 @@ window_anomaly_script = load_script("mgof")
 
 def tukey(key, k=1):
     """Returns the min and max alert thresholds for a given k (stddev tolerance)"""
-    return tukey_script(keys=[key], args=[k])
+    return map(float, tukey_script(keys=[key], args=[k]))
 
 
 def window_anomaly(key, n_bins=10, window_size=100, confidence=95, debug=False):
@@ -26,9 +26,9 @@ def window_anomaly(key, n_bins=10, window_size=100, confidence=95, debug=False):
 
 def main():
     key = "load"
-    print("Valid distribution (tukey): ", tukey(key))
+    print("Valid internval (tukey): ", tukey(key))
     test, anomaly = window_anomaly(key)
-    print("Chi-squared test that the last window is anomaly: ", test)
+    print("Chi-squared test for last window being anomalous: ", test)
     print("Anomaly (confidence 95%): ", anomaly != 0)
 
 
