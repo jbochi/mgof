@@ -45,10 +45,13 @@ def main():
     prepopulate(key)
     print
     while True:
-        value = random_point(LOAD_AVG+30, LOAD_STDDEV/2)
-        print(value)
-        post_metric(key, value)
-        clean_old_values(key)
+        try:
+            value = random_point(LOAD_AVG+30, LOAD_STDDEV/2)
+            print(value)
+            post_metric(key, value)
+            clean_old_values(key)
+        except RuntimeError as err:
+            print(err)
         time.sleep(1)
 
 
