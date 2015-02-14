@@ -1,3 +1,5 @@
+-- Returns Tukey's range for a given range:
+-- http://en.wikipedia.org/wiki/Tukey%27s_range_test
 local key = KEYS[1]
 local k = ARGV[1] or 1.5
 
