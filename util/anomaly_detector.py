@@ -1,13 +1,27 @@
 from __future__ import print_function
 import redis
 import os
+import types
 
 r = redis.StrictRedis(host='localhost', port=6379)
+
+class AsyncScript(redis.client.Script):
+    def __call__(self, keys=[], args=[], client=None):
+        if client is None:
+            client = self.registered_client
+        def eval_async(self, sha, numkeys, *keys_and_args):
+            return self.execute_command('EVALSHAASYNC', sha, numkeys, *keys_and_args)
+        client.evalsha = types.MethodType(eval_async, client)
+        return super(AsyncScript, self).__call__(keys, args, client)
+
+
+def register_async_script(client, script):
+    return AsyncScript(client, script)
 
 
 def load_script(script_name):
     with open(os.path.join("scripts", script_name + ".lua")) as f:
-        return r.register_script(f.read())
+        return register_async_script(r, f.read())
 
 
 tukey_script = load_script("tukey")
