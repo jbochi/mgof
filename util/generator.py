@@ -42,8 +42,10 @@ def prepopulate(key):
 
 def main():
     key = "load"
+    print "Prepopulating key %s" % key
     prepopulate(key)
     print
+    print "Adding new points..."
     while True:
         try:
             value = random_point(LOAD_AVG+30, LOAD_STDDEV/2)
