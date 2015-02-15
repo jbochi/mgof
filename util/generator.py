@@ -17,17 +17,14 @@ LOAD_STDDEV = 15
 
 
 r = redis.StrictRedis(host='localhost', port=6379)
-
-def post_metric(key, value, timestamp=None):
-    timestamp = timestamp or time.time()
-    r.zadd(key, timestamp, ("%d:%f" % (timestamp, value)))
+a = mgof.AnomalyDetector(host='localhost', port=6379)
 
 
 def clean_old_values(key):
     r.zremrangebyscore(key, "-inf", time.time() - TIME_SERIES_LENGTH_IN_SECONDS)
 
 
-def random_point(avg=LOAD_AVG,stddev=LOAD_STDDEV):
+def random_value(avg=LOAD_AVG, stddev=LOAD_STDDEV):
     return min([max([random.normalvariate(avg, stddev),0]), 100])
 
 
@@ -35,7 +32,7 @@ def prepopulate(key):
     now = time.time()
     r.delete(key)
     for delta in range(0, -TIME_SERIES_LENGTH_IN_SECONDS, -METRICS_INTERVAL_IN_SECONDS):
-        post_metric(key, random_point(), now + delta)
+        a.post_metric(key, random_value(), now + delta)
         if delta % (1000 * METRICS_INTERVAL_IN_SECONDS) == 0:
             sys.stdout.write(".")
             sys.stdout.flush()

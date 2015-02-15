@@ -10,7 +10,7 @@ def test_post_ang_get_metric_back():
     r.delete(TEST_KEY)
     a.post_metric(key=TEST_KEY, value=40.0, timestamp=14000000)
 
-    assert a.get_metric(key=TEST_KEY) == [(14000000, 40.0)]
+    assert a.get_time_series(key=TEST_KEY) == [(14000000, 40.0)]
 
 
 def test_get_metric_should_return_values_in_specified_range():
