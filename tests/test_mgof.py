@@ -19,8 +19,8 @@ def test_get_metric_should_return_values_in_specified_range():
     r.delete(TEST_KEY)
     a.post_metric(key=TEST_KEY, value=40.0, timestamp=ts)
 
-    assert a.get_metric(key=TEST_KEY) == [(ts, 40.0)]
-    assert a.get_metric(key=TEST_KEY, start=ts - 10, stop=ts + 10) == [(ts, 40.0)]
-    assert a.get_metric(key=TEST_KEY, start="-inf", stop="+inf") == [(ts, 40.0)]
-    assert a.get_metric(key=TEST_KEY, start=ts - 20, stop=ts - 10) == []
-    assert a.get_metric(key=TEST_KEY, start=ts + 10, stop=ts - 20) == []
+    assert a.get_time_series(key=TEST_KEY) == [(ts, 40.0)]
+    assert a.get_time_series(key=TEST_KEY, start=ts - 10, stop=ts + 10) == [(ts, 40.0)]
+    assert a.get_time_series(key=TEST_KEY, start="-inf", stop="+inf") == [(ts, 40.0)]
+    assert a.get_time_series(key=TEST_KEY, start=ts - 20, stop=ts - 10) == []
+    assert a.get_time_series(key=TEST_KEY, start=ts + 10, stop=ts - 20) == []

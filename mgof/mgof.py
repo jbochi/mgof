@@ -16,5 +16,5 @@ class AnomalyDetector():
         timestamp = timestamp or time.time()
         return self.r.zadd(key, timestamp, self._serialize_value(timestamp, value))
 
-    def get_metric(self, key, start="-inf", stop="+inf"):
+    def get_time_series(self, key, start="-inf", stop="+inf"):
         return map(self._read_value, self.r.zrangebyscore(key, start, stop))
