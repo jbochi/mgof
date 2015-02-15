@@ -65,3 +65,10 @@ def test_should_detect_anomalies(a):
         value = random.normalvariate(mu=75.0, sigma=1.5)
         a.post_metric(key=TEST_KEY, value=value, timestamp=ts)
     assert a.is_window_anomalous(key=TEST_KEY, window_size=60)
+
+def test_should_not_detect_anomaly_on_normal_condition(a):
+    now = int(time.time())
+    for ts in range(now - 600, now):
+        value = random.normalvariate(mu=50.0, sigma=10.0)
+        a.post_metric(key=TEST_KEY, value=value, timestamp=ts)
+    assert not a.is_window_anomalous(key=TEST_KEY, window_size=60)
