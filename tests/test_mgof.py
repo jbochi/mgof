@@ -38,3 +38,10 @@ def test_get_metric_should_return_values_in_specified_range(a):
     assert a.get_time_series(key=TEST_KEY, start="-inf", stop="+inf") == [(ts, 40.0)]
     assert a.get_time_series(key=TEST_KEY, start=ts - 20, stop=ts - 10) == []
     assert a.get_time_series(key=TEST_KEY, start=ts + 10, stop=ts - 20) == []
+
+
+def test_should_timeseries_values_in_order(a):
+    now = time.time()
+    a.post_metric(key=TEST_KEY, value=40.0, timestamp=now)
+    a.post_metric(key=TEST_KEY, value=20.0, timestamp=now - 60)
+    assert a.get_time_series(key=TEST_KEY) == [(now - 60, 20.0), (now, 40.0)]
