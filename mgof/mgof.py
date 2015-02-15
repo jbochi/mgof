@@ -4,7 +4,7 @@ import time
 
 class AnomalyDetector():
     def __init__(self, host='localhost', port=6379):
-        self.r = redis.StrictRedis(host='localhost', port=6379)
+        self.r = redis.StrictRedis(host=host, port=port)
 
     def _serialize_value(self, timestamp, value):
         return "%f:%f" % (timestamp, value)
