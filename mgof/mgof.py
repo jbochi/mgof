@@ -7,4 +7,7 @@ class AnomalyDetector():
 
     def post_metric(self, key, value, timestamp=None):
         timestamp = timestamp or time.time()
-        self.r.zadd(key, timestamp, ("%d:%f" % (timestamp, value)))
+        return self.r.zadd(key, timestamp, ("%d:%f" % (timestamp, value)))
+
+    def get_metric(self, key, min_value, max_value):
+        return self.r.zcount(key, min_value, max_value)
