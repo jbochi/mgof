@@ -1,6 +1,7 @@
 import mgof
 import pytest
 import redis
+import random
 import time
 
 
@@ -53,3 +54,14 @@ def test_should_delete_old_values(a):
     a.post_metric(key=TEST_KEY, value=20.0, timestamp=now - 60)
     a.clean_old_values(key=TEST_KEY, series_length=30.0)
     assert a.get_time_series(key=TEST_KEY) == [(now, 40.0)]
+
+
+def test_should_detect_anomalies(a):
+    now = int(time.time())
+    for ts in range(now - 600, now - 60):
+        value = random.normalvariate(mu=50.0, sigma=10.0)
+        a.post_metric(key=TEST_KEY, value=value, timestamp=ts)
+    for ts in range(now - 60, now):
+        value = random.normalvariate(mu=75.0, sigma=1.5)
+        a.post_metric(key=TEST_KEY, value=value, timestamp=ts)
+    assert a.is_window_anomalous(key=TEST_KEY, window_size=60)
