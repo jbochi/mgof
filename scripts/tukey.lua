@@ -5,7 +5,7 @@ local k = ARGV[1] or 1.5
 
 local time_series_to_values = function(time_series)
   for i = 1, #time_series do
-    local value = string.gsub(time_series[i], "%d+:", "")
+    local value = string.gsub(time_series[i], "%d+.?%d*:", "")
     time_series[i] = tonumber(value)
   end
   return time_series

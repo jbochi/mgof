@@ -74,3 +74,13 @@ def test_should_not_detect_anomaly_on_normal_condition(a):
         a.post_metric(key=TEST_KEY, value=value, timestamp=ts)
     assert not a.is_window_anomalous(key=TEST_KEY,
         min_value=0, max_value=100, n_bins=10, window_size=60)
+
+
+def test_tukey_range_should_be_close_to_avg_value(a):
+    now = int(time.time())
+    for ts in range(now - 600, now):
+        value = random.normalvariate(mu=50.0, sigma=5)
+        a.post_metric(key=TEST_KEY, value=value, timestamp=ts)
+    min_range, max_range = a.tukey_range(key=TEST_KEY)
+    assert abs(min_range - 40) < 1
+    assert abs(max_range - 60) < 1

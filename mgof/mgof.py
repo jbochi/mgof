@@ -8,7 +8,7 @@ import types
 class AnomalyDetector():
     def __init__(self, host='localhost', port=6379):
         self.r = redis.StrictRedis(host=host, port=port)
-        # tukey_script = load_script("tukey")
+        self.tukey_script = self._load_script("tukey")
         self.window_anomaly_script = self._load_script("mgof")
 
     def _register_async_script(self, script):
@@ -39,6 +39,10 @@ class AnomalyDetector():
     def is_window_anomalous(self, key, min_value=None, max_value=None, n_bins=10, window_size=60, confidence=99, c_th=1, debug=False):
         return self.window_anomaly_script(keys=[key],
             args=[min_value, max_value, n_bins, window_size, confidence, c_th, debug])[0] == 1
+
+    def tukey_range(self, key, k=1):
+        """Returns the min and max alert thresholds for a given k (# of stddev tolerance)"""
+        return map(float, self.tukey_script(keys=[key], args=[k]))
 
 
 class AsyncScript(redis.client.Script):
