@@ -45,3 +45,11 @@ def test_should_timeseries_values_in_order(a):
     a.post_metric(key=TEST_KEY, value=40.0, timestamp=now)
     a.post_metric(key=TEST_KEY, value=20.0, timestamp=now - 60)
     assert a.get_time_series(key=TEST_KEY) == [(now - 60, 20.0), (now, 40.0)]
+
+
+def test_should_delete_old_values(a):
+    now = time.time()
+    a.post_metric(key=TEST_KEY, value=40.0, timestamp=now)
+    a.post_metric(key=TEST_KEY, value=20.0, timestamp=now - 60)
+    a.clean_old_values(key=TEST_KEY, series_length=30.0)
+    assert a.get_time_series(key=TEST_KEY) == [(now, 40.0)]

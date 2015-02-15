@@ -19,3 +19,7 @@ class AnomalyDetector():
 
     def get_time_series(self, key, start="-inf", stop="+inf"):
         return map(self._read_value, self.r.zrangebyscore(key, start, stop))
+
+    def clean_old_values(self, key, series_length):
+        now = time.time()
+        return self.r.zremrangebyscore(key, "-inf", now - series_length)

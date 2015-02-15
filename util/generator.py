@@ -26,10 +26,6 @@ r = redis.StrictRedis(host='localhost', port=6379)
 a = mgof.AnomalyDetector(host='localhost', port=6379)
 
 
-def clean_old_values(key):
-    r.zremrangebyscore(key, "-inf", time.time() - TIME_SERIES_LENGTH_IN_SECONDS)
-
-
 def random_value(avg=LOAD_AVG, stddev=LOAD_STDDEV):
     return min([max([random.normalvariate(avg, stddev),0]), 100])
 
@@ -51,10 +47,10 @@ def main():
     print "Adding new points..."
     while True:
         try:
-            value = random_value(LOAD_AVG+30, LOAD_STDDEV/2)
+            value = random_value(LOAD_AVG + 30, LOAD_STDDEV / 2.0)
             print(value)
             a.post_metric(key, value)
-            clean_old_values(key)
+            a.clean_old_values(key, TIME_SERIES_LENGTH_IN_SECONDS)
         except RuntimeError as err:
             print(err)
         time.sleep(1)
