@@ -3,6 +3,12 @@ import random
 import redis
 import time
 import sys
+import os
+
+path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(path)
+
+import mgof
 
 SECOND = 1
 MINUTE = 60 * SECOND
@@ -45,9 +51,9 @@ def main():
     print "Adding new points..."
     while True:
         try:
-            value = random_point(LOAD_AVG+30, LOAD_STDDEV/2)
+            value = random_value(LOAD_AVG+30, LOAD_STDDEV/2)
             print(value)
-            post_metric(key, value)
+            a.post_metric(key, value)
             clean_old_values(key)
         except RuntimeError as err:
             print(err)
