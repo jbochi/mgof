@@ -1,13 +1,15 @@
 -- mgof algorithm adapted from http://www.hpl.hp.com/techreports/2011/HPL-2011-8.pdf
 
 local key = KEYS[1]
-local n_bins = tonumber(ARGV[1]) or 10      -- number of bins: between 1 and 10
-local w_size = tonumber(ARGV[2]) or 60      -- window size
-local confidence = tonumber(ARGV[3]) or 99  -- test confidence (95 or 99)
-local c_th = tonumber(ARGV[4]) or 1         -- c_th is a threshold
+local min_value = tonumber(ARGV[1])         -- min timeseries value
+local max_value = tonumber(ARGV[2])         -- max timeseries value
+local n_bins = tonumber(ARGV[3]) or 10      -- number of bins: between 1 and 10
+local w_size = tonumber(ARGV[4]) or 60      -- window size
+local confidence = tonumber(ARGV[5]) or 99  -- test confidence (95 or 99)
+local c_th = tonumber(ARGV[6]) or 1         -- c_th is a threshold
                                             --   to determine if a hypothesis has
                                             --   occurred frequently enough
-local debug_script = string.lower(ARGV[5]) == "true"  -- to debug or not
+local debug_script = string.lower(ARGV[7]) == "true"  -- to debug or not
 
 
 local chi_square = {[99]={6.63, 9.21, 11.34, 13.28, 15.09, 16.81, 18.48, 20.09, 21.67},
@@ -19,15 +21,15 @@ local debug = function(...)
   end
 end
 
-local create_bin_classifier = function(time_series, n_bins)
-  local min
-  local max
-  for i = 1, #time_series do
-    if min == nil or time_series[i] < min then
-      min = time_series[i]
-    end
-    if max == nil or time_series[i] > max then
-      max = time_series[i]
+local create_bin_classifier = function(time_series, min, max, n_bins)
+  if min == nil or max == nil then
+    for i = 1, #time_series do
+      if min == nil or time_series[i] < min then
+        min = time_series[i]
+      end
+      if max == nil or time_series[i] > max then
+        max = time_series[i]
+      end
     end
   end
   local step_size = (max - min) / n_bins
@@ -136,6 +138,6 @@ local mgof_last_window = function(elements, classifier)
 end
 
 local elements = time_series_to_values(redis.call('ZRANGEBYSCORE', key, '-inf', '+inf'))
-local classifier = create_bin_classifier(elements, n_bins)
+local classifier = create_bin_classifier(elements, min_value, max_value, n_bins)
 
 return mgof_windows(elements, classifier)
