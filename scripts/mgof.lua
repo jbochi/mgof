@@ -107,7 +107,7 @@ local mgof_windows = function(elements, classifier)
     if m == 1 then
       c[m] = c[m] + 1
     else
-      best_test_value = 9999
+      best_test_value = math.huge
       local best_window_index = 0
       for i = 1, m - 1 do
         local test_value = chi_square_test_value(p_observed, p[i])
