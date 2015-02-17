@@ -82,5 +82,5 @@ def test_tukey_range_should_be_close_to_avg_value(a):
         value = random.normalvariate(mu=50.0, sigma=5)
         a.post_metric(key=TEST_KEY, value=value, timestamp=ts)
     min_range, max_range = a.tukey_range(key=TEST_KEY)
-    assert abs(min_range - 40) < 1
-    assert abs(max_range - 60) < 1
+    assert abs(min_range - 40) < 1.5
+    assert abs(max_range - 60) < 1.5

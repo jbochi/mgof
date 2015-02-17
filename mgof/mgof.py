@@ -2,6 +2,7 @@ import os
 import redis
 import time
 import types
+import re
 
 
 
@@ -14,9 +15,20 @@ class AnomalyDetector():
     def _register_async_script(self, script):
         return AsyncScript(self.r, script)
 
-    def _load_script(self, script_name):
+    def _get_script_content(self, script_name):
         with open(os.path.join("scripts", script_name + ".lua")) as f:
-            return self._register_async_script(f.read())
+            content = f.read()
+        #TODO: More general replacement for other module names
+        if script_name != "utils":
+            utils_content = self._get_script_content("utils")
+            utils_content_without_return = "\n".join(utils_content.split("\n")[:-2])
+            content = content.replace('local utils = require("utils")\n',
+                utils_content_without_return)
+        return content
+
+    def _load_script(self, script_name):
+        content = self._get_script_content(script_name)
+        return self._register_async_script(content)
 
     def _serialize_value(self, timestamp, value):
         return "%f:%f" % (timestamp, value)

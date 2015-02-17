@@ -2,6 +2,7 @@ package.path = "scripts/?.lua;spec/?.lua;" .. package.path
 
 function run_in_context(filename, context)
   local f = assert(loadfile(filename))
+  setmetatable(context, {__index=_G})
   local scoped_f = load(string.dump(f), nil, nil, context)
   return scoped_f()
 end
@@ -9,11 +10,6 @@ end
 describe("tukey", function()
   it("should return range", function()
     local context = {
-      string=string,
-      table=table,
-      tonumber=tonumber,
-      math=math,
-      tostring=tostring,
       KEYS={"TESTKEY"},
       ARGV={1},
       redis={
