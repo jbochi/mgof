@@ -18,7 +18,7 @@ Running integration tests
 -------------------------
 
 - Run parallel redis locally
-- Install python dependencies: `pip install -r requirements.txt`
+- Install python dependencies: `pip install -r requirements-dev.txt`
 - py.test
 
 
