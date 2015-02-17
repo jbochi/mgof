@@ -14,10 +14,14 @@ describe("tukey", function()
       tonumber=tonumber,
       math=math,
       tostring=tostring,
-      KEYS={},
+      KEYS={"TESTKEY"},
       ARGV={1},
       redis={
-        call=function()
+        call=function(command, key, min, max)
+          assert(command == 'ZRANGEBYSCORE')
+          assert(key == "TESTKEY")
+          assert(min == "-inf")
+          assert(max == '+inf')
           return {2, 2, 4, 4}
         end
     }}
