@@ -64,8 +64,8 @@ utils.likelihood_ratio = function(p_observed, p)
   return n * utils.relative_entropy(p_observed, p)
 end
 
-utils.chi_square_test_value = function(p_observed, p)
-  return 2 * utils.likelihood_ratio(p_observed, p)
+utils.chi_square_test_value = function(p_observed, p, n)
+  return 2 * n * utils.likelihood_ratio(p_observed, p)
 end
 
 utils.chi_square_test = function(test_value, k, confidence)
@@ -92,7 +92,7 @@ utils.mgof_windows = function(elements, classifier, options)
       best_test_value = math.huge
       local best_window_index = 0
       for i = 1, m - 1 do
-        local test_value = utils.chi_square_test_value(p_observed, p[i])
+        local test_value = utils.chi_square_test_value(p_observed, p[i], size)
         if test_value < best_test_value then
           best_test_value = test_value
           best_window_index = i
@@ -111,11 +111,11 @@ utils.mgof_windows = function(elements, classifier, options)
   return {(anomaly and 1 or 0), tostring(best_test_value)}
 end
 
-utils.mgof_last_window = function(elements, classifier)
+utils.mgof_last_window = function(elements, classifier, w_size)
   -- mgof of last window against all other datapoints distribution
-  local p = distribution(elements, n_bins, classifier)
+  local p = distribution(elements, n_bins, classifier, 1, #elements - w_size)
   local p_observed = distribution(elements, n_bins, classifier, #elements - w_size, w_size)
-  local test_value = chi_square_test_value(p_observed, p)
+  local test_value = chi_square_test_value(p_observed, p, w_size)
   local anomaly = chi_square_test(test_value, n_bins - 1, confidence)
   return {(anomaly and 1 or 0), tostring(test_value)}
 end
