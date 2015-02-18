@@ -55,14 +55,6 @@ utils.distribution = function(time_series, n_bins, classifier, offset, size)
   return p
 end
 
-utils.time_series_to_values = function(time_series)
-  for i = 1, #time_series do
-    local value = string.gsub(time_series[i], "%d+.?%d*:", "")
-    time_series[i] = tonumber(value)
-  end
-  return time_series
-end
-
 utils.relative_entropy = function(q, p)
   local total = 0
   utils.debug("bin", "q[i]", "p[i]", "running sum")
