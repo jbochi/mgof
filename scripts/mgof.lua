@@ -14,6 +14,6 @@ options.c_th = tonumber(ARGV[6]) or 1         -- c_th is a threshold
 utils.debug_script = string.lower(ARGV[7]) == "true"  -- to debug or not
 
 local elements = utils.time_series_to_values(redis.call('ZRANGEBYSCORE', key, '-inf', '+inf'))
-local classifier = utils.create_bin_classifier(elements, min_value, max_value, options.n_bins)
+local classifier = utils.create_bin_classifier(elements, options.n_bins, min_value, max_value)
 
 return utils.mgof_windows(elements, classifier, options)

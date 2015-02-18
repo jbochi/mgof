@@ -18,7 +18,7 @@ utils.debug = function(...)
   end
 end
 
-utils.create_bin_classifier = function(time_series, min, max, n_bins)
+utils.create_bin_classifier = function(time_series, n_bins, min, max)
   if min == nil or max == nil then
     for i = 1, #time_series do
       if min == nil or time_series[i] < min then
@@ -31,7 +31,7 @@ utils.create_bin_classifier = function(time_series, min, max, n_bins)
   end
   local step_size = (max - min) / n_bins
   local classifier = function(value)
-    return math.max(1, math.ceil((value - min) / step_size))
+    return math.min(math.max(1, math.ceil((value - min) / step_size)), n_bins)
   end
   utils.debug("MAX", "MIN", "STEP")
   utils.debug(max, min, step_size)
