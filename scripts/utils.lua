@@ -59,13 +59,8 @@ utils.relative_entropy = function(p, q)
   return total
 end
 
-utils.likelihood_ratio = function(p_observed, p)
-  local n = #p_observed
-  return n * utils.relative_entropy(p_observed, p)
-end
-
 utils.chi_square_test_value = function(p_observed, p, n)
-  return 2 * n * utils.likelihood_ratio(p_observed, p)
+  return 2 * n * utils.relative_entropy(p_observed, p)
 end
 
 utils.chi_square_test = function(test_value, k, confidence)
