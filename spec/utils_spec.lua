@@ -57,4 +57,14 @@ describe("distribution", function()
     assert.same({0.5, 0, 0, 0.5}, utils.distribution({1, 90}, n_bins, cf))
     assert.same({0.25, 0.5, 0, 0.25}, utils.distribution({1, 40, 45, 90}, n_bins, cf))
   end)
+
+  it("should use given offset and size", function()
+    local n_bins = 4
+    local cf = utils.create_bin_classifier({}, n_bins, 0, 100)
+    assert.same({0.25, 0.5, 0, 0.25}, utils.distribution({
+        1, 2, 3, 4, 5, 6, 7, 8, 9, -- ignored
+        1, 40, 45, 90,
+        1, 2, 3, 4, 5, 6, 7, 8, 9 -- ignored
+      }, n_bins, cf, 10, 4))
+  end)
 end)
