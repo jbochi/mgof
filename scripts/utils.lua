@@ -12,12 +12,6 @@ utils.time_series_to_values = function(time_series)
   return time_series
 end
 
-utils.debug = function(...)
-  if utils.debug_script then
-    print(...)
-  end
-end
-
 utils.create_bin_classifier = function(time_series, n_bins, min, max)
   if min == nil or max == nil then
     for i = 1, #time_series do
@@ -33,8 +27,6 @@ utils.create_bin_classifier = function(time_series, n_bins, min, max)
   local classifier = function(value)
     return math.min(math.max(1, math.ceil((value - min) / step_size)), n_bins)
   end
-  utils.debug("MAX", "MIN", "STEP")
-  utils.debug(max, min, step_size)
   return classifier
 end
 
@@ -58,12 +50,10 @@ end
 
 utils.relative_entropy = function(q, p)
   local total = 0
-  utils.debug("bin", "q[i]", "p[i]", "running sum")
   for i = 1, #q do
     if q[i] > 0 then
       total = total + q[i] * math.log(q[i] / p[i])
     end
-    utils.debug(i, tostring(q[i]), tostring(p[i]), tostring(total))
   end
   return total
 end

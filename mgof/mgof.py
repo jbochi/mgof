@@ -48,9 +48,9 @@ class AnomalyDetector():
         now = time.time()
         return self.r.zremrangebyscore(key, "-inf", now - series_length)
 
-    def is_window_anomalous(self, key, min_value=None, max_value=None, n_bins=10, window_size=60, confidence=99, c_th=1, debug=False):
+    def is_window_anomalous(self, key, min_value=None, max_value=None, n_bins=10, window_size=60, confidence=99, c_th=1):
         return self.window_anomaly_script(keys=[key],
-            args=[min_value, max_value, n_bins, window_size, confidence, c_th, debug])[0] == 1
+            args=[min_value, max_value, n_bins, window_size, confidence, c_th])[0] == 1
 
     def tukey_range(self, key, k=1):
         """Returns the min and max alert thresholds for a given k (# of stddev tolerance)"""

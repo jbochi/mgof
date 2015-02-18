@@ -10,7 +10,6 @@ options.confidence = tonumber(ARGV[5]) or 99  -- test confidence (95 or 99)
 options.c_th = tonumber(ARGV[6]) or 1         -- c_th is a threshold
                                             --   to determine if a hypothesis has
                                             --   occurred frequently enough
-utils.debug_script = string.lower(ARGV[7]) == "true"  -- to debug or not
 
 local elements = utils.time_series_to_values(redis.call('ZRANGEBYSCORE', key, '-inf', '+inf'))
 local classifier = utils.create_bin_classifier(elements, options.n_bins, min_value, max_value)
