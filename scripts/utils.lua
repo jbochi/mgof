@@ -3,6 +3,7 @@ local utils = {}
 local chi_square = {[99]={6.63, 9.21, 11.34, 13.28, 15.09, 16.81, 18.48, 20.09, 21.67},
                     [95]={3.84, 5.99,  7.81,  9.49, 11.07, 12.59, 14.07, 15.51, 16.92}}
 
+
 utils.time_series_to_values = function(time_series)
   for i = 1, #time_series do
     local value = string.gsub(time_series[i], "%d+.?%d*:", "")
@@ -10,7 +11,6 @@ utils.time_series_to_values = function(time_series)
   end
   return time_series
 end
-
 
 utils.debug = function(...)
   if utils.debug_script then
