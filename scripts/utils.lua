@@ -42,15 +42,16 @@ utils.distribution = function(time_series, n_bins, classifier, offset, size)
   offset = offset or 1
   size = size or (#time_series - offset + 1)
   local p = {}
-  for i = 1, n_bins do
-    p[i] = 0
-  end
   for i = offset, offset + size - 1 do
     local bin = classifier(time_series[i])
-    p[bin] = p[bin] + 1
+    p[bin] = (p[bin] or 0) + 1
   end
   for i = 1, n_bins do
-    p[i] = p[i] / size
+    if p[i] == nil then
+      p[i] = 0
+    else
+      p[i] = p[i] / size
+    end
   end
   return p
 end
@@ -83,6 +84,7 @@ utils.chi_square_test = function(test_value, k, confidence)
 end
 
 utils.mgof_windows = function(elements, classifier, options)
+  -- mgof algorithm adapted from http://www.hpl.hp.com/techreports/2011/HPL-2011-8.pdf
   local m = 1 -- tracks the current number of null hypothesis
   local p = {} -- array of window distributions
   local c = {} -- array that counts how many time window was used to explain other
@@ -119,6 +121,7 @@ utils.mgof_windows = function(elements, classifier, options)
 end
 
 utils.mgof_last_window = function(elements, classifier)
+  -- mgof of last window against all other datapoints distribution
   local p = distribution(elements, n_bins, classifier)
   local p_observed = distribution(elements, n_bins, classifier, #elements - w_size, w_size)
   local test_value = chi_square_test_value(p_observed, p)

@@ -1,4 +1,3 @@
--- mgof algorithm adapted from http://www.hpl.hp.com/techreports/2011/HPL-2011-8.pdf
 local utils = require("utils")
 local options = {}
 
