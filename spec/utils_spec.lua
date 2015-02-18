@@ -68,3 +68,22 @@ describe("distribution", function()
       }, n_bins, cf, 10, 4))
   end)
 end)
+
+describe("relative_entropy", function()
+  it("should be 0 for equal distributions", function()
+    assert.equals(0, utils.relative_entropy({0.5, 0.5}, {0.5, 0.5}))
+    assert.equals(0, utils.relative_entropy({0.4, 0.2, 0, 0.4}, {0.4, 0.2, 0, 0.4}))
+  end)
+
+  it("should be +inf for opposite distributions", function()
+    assert.equals(math.huge, utils.relative_entropy({1, 0, 0, 0}, {0, 0, 0, 1}))
+  end)
+
+  it("should follow the formula", function()
+    assert.equals(1 * math.log(1/0.4),
+      utils.relative_entropy({0, 0, 1, 0}, {0.1, 0.4, 0.4, 0.1}))
+
+    assert.equals(0.2 * math.log(0.2/0.1) + 0.8 * math.log(0.8/0.4),
+      utils.relative_entropy({0.2, 0, 0.8, 0}, {0.1, 0.4, 0.4, 0.1}))
+  end)
+end)

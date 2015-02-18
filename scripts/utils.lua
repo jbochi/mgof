@@ -48,11 +48,12 @@ utils.distribution = function(time_series, n_bins, classifier, offset, size)
   return p
 end
 
-utils.relative_entropy = function(q, p)
+utils.relative_entropy = function(p, q)
+  -- http://en.wikipedia.org/wiki/Kullback%E2%80%93Leibler_divergence
   local total = 0
-  for i = 1, #q do
-    if q[i] > 0 then
-      total = total + q[i] * math.log(q[i] / p[i])
+  for i = 1, #p do
+    if p[i] > 0 then
+      total = total + p[i] * math.log(p[i] / q[i])
     end
   end
   return total
