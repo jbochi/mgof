@@ -1,17 +1,26 @@
 package.path = "scripts/?.lua;spec/?.lua;" .. package.path
+_G.redis = require "fake_redis"
 local utils = require "utils"
 
-describe("time_series_to_values", function()
-  it("should handle integer timestamps", function()
-    assert.same({42}, utils.time_series_to_values({"1400000:42"}))
+before_each(function()
+  redis.call("del", "key")
+end)
+
+after_each(function()
+  redis.call("del", "key")
+end)
+
+describe("add_point", function()
+  it("should add metric point to redis ang get value back", function()
+    utils.add_value("key", 1400000, 42)
+    assert.same({{1400000, 42}},  utils.time_series("key"))
+    assert.same({42},  utils.time_series_values("key"))
   end)
 
-  it("should handle floating point timestamps", function()
-    assert.same({42}, utils.time_series_to_values({"1400000.1234:42"}))
-  end)
-
-  it("should handle floating point values", function()
-    assert.same({42.42}, utils.time_series_to_values({"1400000.1234:42.42"}))
+  it("should handle floating point", function()
+    utils.add_value("key", 1400000.42, 42.42)
+    assert.same({{1400000.42, 42.42}},  utils.time_series("key"))
+    assert.same({42.42},  utils.time_series_values("key"))
   end)
 end)
 

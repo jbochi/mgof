@@ -11,7 +11,7 @@ options.c_th = tonumber(ARGV[6]) or 1         -- c_th is a threshold
                                             --   to determine if a hypothesis has
                                             --   occurred frequently enough
 
-local elements = utils.time_series_to_values(redis.call('ZRANGEBYSCORE', key, '-inf', '+inf'))
+local elements = utils.time_series_values(key)
 local classifier = utils.create_bin_classifier(elements, n_bins, min_value, max_value)
 local anomaly = utils.mgof(elements, classifier, options)
 

@@ -9,8 +9,10 @@ import re
 class AnomalyDetector():
     def __init__(self, host='localhost', port=6379):
         self.r = redis.StrictRedis(host=host, port=port)
+        self.post_metric_script = self._load_script("post_metric", async=False)
         self.tukey_script = self._load_script("tukey")
         self.window_anomaly_script = self._load_script("mgof")
+        self.get_values_script = self._load_script("get_values")
 
     def _register_async_script(self, script):
         return AsyncScript(self.r, script)
@@ -26,23 +28,19 @@ class AnomalyDetector():
                 utils_content_without_return)
         return content
 
-    def _load_script(self, script_name):
+    def _load_script(self, script_name, async=True):
         content = self._get_script_content(script_name)
-        return self._register_async_script(content)
-
-    def _serialize_value(self, timestamp, value):
-        return "%f:%f" % (timestamp, value)
-
-    def _read_value(self, string):
-        ts, value = string.split(":")
-        return float(ts), float(value)
+        if async:
+            return self._register_async_script(content)
+        else:
+            return self.r.register_script(content)
 
     def post_metric(self, key, value, timestamp=None):
         timestamp = timestamp or time.time()
-        return self.r.zadd(key, timestamp, self._serialize_value(timestamp, value))
+        return self.post_metric_script(keys=[key], args=[timestamp, value])
 
     def get_time_series(self, key, start="-inf", stop="+inf"):
-        return map(self._read_value, self.r.zrangebyscore(key, start, stop))
+        return self.get_values_script(keys=[key], args=[start, stop])
 
     def clean_old_values(self, key, series_length):
         now = time.time()

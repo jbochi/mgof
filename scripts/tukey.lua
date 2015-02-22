@@ -5,8 +5,7 @@ local utils = require("utils")
 local key = KEYS[1]
 local k = ARGV[1] or 1.5
 
-local raw_elements = redis.call('ZRANGEBYSCORE', key, '-inf', '+inf')
-local elements = utils.time_series_to_values(raw_elements)
+local elements = utils.time_series_values(key)
 if #elements < 4 then
   return false
 end

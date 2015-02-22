@@ -4,12 +4,38 @@ local chi_square = {[99]={6.63, 9.21, 11.34, 13.28, 15.09, 16.81, 18.48, 20.09, 
                     [95]={3.84, 5.99,  7.81,  9.49, 11.07, 12.59, 14.07, 15.51, 16.92}}
 
 
-utils.time_series_to_values = function(time_series)
-  for i = 1, #time_series do
-    local value = string.gsub(time_series[i], "%d+.?%d*:", "")
-    time_series[i] = tonumber(value)
+local serialize_value = function(timestamp, value)
+  -- we add the timestamp prefix becuase sorted sets elements
+  -- must be unique
+  return timestamp .. ":" .. value
+end
+
+local parse_value = function(str)
+  -- returns a pair of value, timestamp for a given record
+  local colon = string.find(str, ":")
+  local timestamp = tonumber(string.sub(str, 1, colon - 1))
+  local value = tonumber(string.sub(str, colon + 1))
+  return {timestamp, value}
+end
+
+utils.add_value = function(key, timestamp, value)
+  return redis.call('zadd', key, timestamp, serialize_value(timestamp, value))
+end
+
+utils.time_series = function(key)
+  local elements = redis.call('zrangebyscore', key, '-inf', '+inf')
+  for i = 1, #elements do
+    elements[i] = parse_value(elements[i])
   end
-  return time_series
+  return elements
+end
+
+utils.time_series_values = function(key)
+  local elements = utils.time_series(key)
+  for i = 1, #elements do
+    elements[i] = elements[i][2]
+  end
+  return elements
 end
 
 local classifier_mt = {

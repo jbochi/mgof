@@ -11,16 +11,17 @@ describe("tukey", function()
   it("should return false if there are not enough elements", function()
     local context = {
       KEYS={"TESTKEY"},
-      ARGV={1},
-      redis={
-        call=function(command, key, min, max)
-          assert(command == 'ZRANGEBYSCORE')
-          assert(key == "TESTKEY")
-          assert(min == "-inf")
-          assert(max == '+inf')
-          return {}
-        end
-    }}
+      ARGV={1}
+    }
+    _G.redis = {
+      call=function(command, key, min, max)
+        assert(command == 'zrangebyscore')
+        assert(key == "TESTKEY")
+        assert(min == "-inf")
+        assert(max == '+inf')
+        return {}
+      end
+    }
     local range = run_in_context("scripts/tukey.lua", context)
     assert.falsy(range)
   end)
@@ -29,15 +30,16 @@ describe("tukey", function()
     local context = {
       KEYS={"TESTKEY"},
       ARGV={1},
-      redis={
-        call=function(command, key, min, max)
-          assert(command == 'ZRANGEBYSCORE')
-          assert(key == "TESTKEY")
-          assert(min == "-inf")
-          assert(max == '+inf')
-          return {2, 2, 4, 4}
-        end
-    }}
+    }
+    _G.redis = {
+      call=function(command, key, min, max)
+        assert(command == 'zrangebyscore')
+        assert(key == "TESTKEY")
+        assert(min == "-inf")
+        assert(max == '+inf')
+        return {"t:2", "t:2", "t:4", "t:4"}
+      end
+    }
     local range = run_in_context("scripts/tukey.lua", context)
     assert.equals(0, tonumber(range[1]))
     assert.equals(6, tonumber(range[2]))
