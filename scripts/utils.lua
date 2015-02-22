@@ -154,4 +154,10 @@ utils.mgof = function(elements, classifier, options)
   return anomaly
 end
 
+utils.last_window_range = function(now, w_size)
+  local stop = math.floor(now / w_size) * w_size
+  local start = stop - w_size
+  return {start, stop}
+end
+
 return utils
