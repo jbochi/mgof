@@ -78,13 +78,23 @@ utils.chi_square_test = function(test_value, k, confidence)
   return test_value > cdf
 end
 
-utils.mgof_windows = function(elements, classifier, options)
-  -- mgof algorithm adapted from http://www.hpl.hp.com/techreports/2011/HPL-2011-8.pdf
+-- mgof of last window against all other datapoints distribution
+utils.mgof_last_window = function(elements, classifier, options)
+  local p = utils.distribution(elements, classifier, 1, #elements - options.w_size)
+  local p_observed = utils.distribution(elements, classifier, #elements - options.w_size, options.w_size)
+  local test_value = utils.chi_square_test_value(p_observed, p, options.w_size)
+  local anomaly = utils.chi_square_test(test_value, classifier.n_bins - 1, options.confidence)
+  return anomaly
+end
+
+-- mgof algorithm adapted from http://www.hpl.hp.com/techreports/2011/HPL-2011-8.pdf
+utils.mgof = function(elements, classifier, options)
   local m = 1 -- tracks the current number of null hypothesis
   local p = {} -- array of window distributions
-  local c = {} -- array that counts how many time window was used to explain other
+  local c = {} -- array that counts how many times a window was used to explain other
   local anomaly
   local best_test_value
+
   for w_start = 1, #elements, options.w_size + 1 do
     anomaly = false
     c[m] = 0
@@ -112,15 +122,7 @@ utils.mgof_windows = function(elements, classifier, options)
     p[m] = p_observed
     m = m + 1
   end
-  return anomaly
-end
 
-utils.mgof_last_window = function(elements, classifier, w_size, options)
-  -- mgof of last window against all other datapoints distribution
-  local p = utils.distribution(elements, classifier, 1, #elements - options.w_size)
-  local p_observed = utils.distribution(elements, classifier, #elements - options.w_size, options.w_size)
-  local test_value = utils.chi_square_test_value(p_observed, p, options.w_size)
-  local anomaly = utils.chi_square_test(test_value, classifier.n_bins - 1, options.confidence)
   return anomaly
 end
 

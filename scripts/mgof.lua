@@ -13,6 +13,6 @@ options.c_th = tonumber(ARGV[6]) or 1         -- c_th is a threshold
 
 local elements = utils.time_series_to_values(redis.call('ZRANGEBYSCORE', key, '-inf', '+inf'))
 local classifier = utils.create_bin_classifier(elements, n_bins, min_value, max_value)
-local anomaly = utils.mgof_windows(elements, classifier, options)
+local anomaly = utils.mgof(elements, classifier, options)
 
 return anomaly and 1 or 0 -- convert to integer for redis reply

@@ -115,7 +115,7 @@ describe("mgof_last_window", function()
     for i = 1,100 do
       elements[#elements + 1] = 4
     end
-    assert.falsy(utils.mgof_last_window(elements, cf, 10, options))
+    assert.falsy(utils.mgof_last_window(elements, cf, options))
   end)
 
   it("should be true for anomal window", function()
@@ -128,6 +128,32 @@ describe("mgof_last_window", function()
     for i = 1, 10 do
       elements[#elements + 1] = 9
     end
-    assert.truthy(utils.mgof_last_window(elements, cf, 10, options))
+    assert.truthy(utils.mgof_last_window(elements, cf, options))
+  end)
+end)
+
+
+describe("mgof", function()
+  it("should be false for steady distribution", function()
+    local cf = utils.create_bin_classifier({}, 10, 0, 10)
+    local elements = {}
+    local options = {w_size=10, confidence=95, c_th=1}
+    for i = 1,100 do
+      elements[#elements + 1] = 4
+    end
+    assert.falsy(utils.mgof(elements, cf, options))
+  end)
+
+  it("should be true if last window is anomalous", function()
+    local cf = utils.create_bin_classifier({}, 10, 0, 10)
+    local elements = {}
+    local options = {w_size=10, confidence=95, c_th=1}
+    for i = 1,100 do
+      elements[#elements + 1] = 4 + i/100
+    end
+    for i = 1, 10 do
+      elements[#elements + 1] = 9
+    end
+    assert.truthy(utils.mgof(elements, cf, options))
   end)
 end)
