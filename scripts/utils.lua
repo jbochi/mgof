@@ -186,7 +186,12 @@ utils.distributions = function(key, classifier, now, w_size)
       -- last window is now complete, since there is a datapoint after it
       local w_start = current_window_start_index
       local size = ix - current_window_start_index
-      distributions[#distributions + 1] = utils.distribution(elements, classifier, w_start, size)
+      distributions[#distributions + 1] = {
+        start=current_window_stop_ts - w_size,
+        stop=current_window_stop_ts,
+        size=size,
+        values=utils.distribution(elements, classifier, w_start, size)
+      }
 
       current_window_start_index = ix
       current_window_stop_ts = current_window_stop_ts + w_size
