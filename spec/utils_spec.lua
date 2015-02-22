@@ -87,3 +87,11 @@ describe("relative_entropy", function()
       utils.relative_entropy({0.2, 0, 0.8, 0}, {0.1, 0.4, 0.4, 0.1}))
   end)
 end)
+
+
+describe("chi_square_test_value", function()
+  it("should return correct value", function()
+    assert.equals(200 * math.log(1/0.4),
+      utils.chi_square_test_value({0, 0, 1, 0}, {0.1, 0.4, 0.4, 0.1}, 100))
+  end)
+end)
