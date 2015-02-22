@@ -22,8 +22,10 @@ utils.add_value = function(key, timestamp, value)
   return redis.call('zadd', key, timestamp, serialize_value(timestamp, value))
 end
 
-utils.time_series = function(key)
-  local elements = redis.call('zrangebyscore', key, '-inf', '+inf')
+utils.time_series = function(key, start, stop)
+  start = start or "-inf"
+  stop = stop or "+inf"
+  local elements = redis.call('zrangebyscore', key, start, stop)
   for i = 1, #elements do
     elements[i] = parse_value(elements[i])
   end

@@ -20,7 +20,7 @@ def a():
 
 def test_post_ang_get_metric_back(a):
     a.post_metric(key=TEST_KEY, value=40.0, timestamp=14000000)
-    assert a.get_time_series(key=TEST_KEY) == [(14000000, 40.0)]
+    assert a.get_time_series(key=TEST_KEY) == [[14000000, 40.0]]
 
 
 def test_should_use_current_timestamp_for_metric(a):
@@ -34,26 +34,26 @@ def test_get_metric_should_return_values_in_specified_range(a):
     a = mgof.AnomalyDetector()
     a.post_metric(key=TEST_KEY, value=40.0, timestamp=ts)
 
-    assert a.get_time_series(key=TEST_KEY) == [(ts, 40.0)]
-    assert a.get_time_series(key=TEST_KEY, start=ts - 10, stop=ts + 10) == [(ts, 40.0)]
-    assert a.get_time_series(key=TEST_KEY, start="-inf", stop="+inf") == [(ts, 40.0)]
+    assert a.get_time_series(key=TEST_KEY) == [[ts, 40.0]]
+    assert a.get_time_series(key=TEST_KEY, start=ts - 10, stop=ts + 10) == [[ts, 40.0]]
+    assert a.get_time_series(key=TEST_KEY, start="-inf", stop="+inf") == [[ts, 40.0]]
     assert a.get_time_series(key=TEST_KEY, start=ts - 20, stop=ts - 10) == []
     assert a.get_time_series(key=TEST_KEY, start=ts + 10, stop=ts - 20) == []
 
 
-def test_should_timeseries_values_in_order(a):
-    now = time.time()
+def test_should_return_timeseries_values_in_order(a):
+    now = int(time.time())
     a.post_metric(key=TEST_KEY, value=40.0, timestamp=now)
     a.post_metric(key=TEST_KEY, value=20.0, timestamp=now - 60)
-    assert a.get_time_series(key=TEST_KEY) == [(now - 60, 20.0), (now, 40.0)]
+    assert a.get_time_series(key=TEST_KEY) == [[now - 60, 20.0], [now, 40.0]]
 
 
 def test_should_delete_old_values(a):
-    now = time.time()
+    now = int(time.time())
     a.post_metric(key=TEST_KEY, value=40.0, timestamp=now)
     a.post_metric(key=TEST_KEY, value=20.0, timestamp=now - 60)
     a.clean_old_values(key=TEST_KEY, series_length=30.0)
-    assert a.get_time_series(key=TEST_KEY) == [(now, 40.0)]
+    assert a.get_time_series(key=TEST_KEY) == [[now, 40.0]]
 
 
 def test_should_detect_anomalies(a):

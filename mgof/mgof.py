@@ -37,10 +37,11 @@ class AnomalyDetector():
 
     def post_metric(self, key, value, timestamp=None):
         timestamp = timestamp or time.time()
-        return self.post_metric_script(keys=[key], args=[timestamp, value])
+        return self.post_metric_script(keys=[key], args=[str(timestamp), str(value)])
 
     def get_time_series(self, key, start="-inf", stop="+inf"):
-        return self.get_values_script(keys=[key], args=[start, stop])
+        elements = self.get_values_script(keys=[key], args=[start, stop])
+        return map(lambda x: map(float, x), elements)
 
     def clean_old_values(self, key, series_length):
         now = time.time()
