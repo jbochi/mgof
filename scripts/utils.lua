@@ -42,6 +42,9 @@ end
 
 local classifier_mt = {
   __call = function(self, value)
+    if type(value) == "table" then
+      value = value[2] -- value from timeseries table
+    end
     return math.max(1, math.min(self.n_bins,
       math.ceil((value - self.min) / self.step_size)))
   end
@@ -158,6 +161,39 @@ utils.last_window_range = function(now, w_size)
   local stop = math.floor(now / w_size) * w_size
   local start = stop - w_size
   return {start, stop}
+end
+
+utils.distributions = function(key, classifier, now, w_size)
+  local elements = utils.time_series(key, "-inf", "+inf")
+  if #elements == 0 then
+    return {}
+  end
+
+  local first_ts = elements[1][1]
+  local current_window_stop_ts = utils.last_window_range(first_ts, w_size)[2]
+  if current_window_stop_ts <= first_ts then
+    current_window_stop_ts = current_window_stop_ts + w_size
+  end
+  local distributions = {}
+
+  local current_window_start_index = 1
+
+  for ix, element in ipairs(elements) do
+    local ts = element[1]
+    local value = element[2]
+
+    if ts > current_window_stop_ts then
+      -- last window is now complete, since there is a datapoint after it
+      local w_start = current_window_start_index
+      local size = ix - current_window_start_index
+      distributions[#distributions + 1] = utils.distribution(elements, classifier, w_start, size)
+
+      current_window_start_index = ix
+      current_window_stop_ts = current_window_stop_ts + w_size
+    end
+  end
+
+  return distributions
 end
 
 return utils

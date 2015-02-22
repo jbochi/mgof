@@ -2,13 +2,13 @@ package.path = "scripts/?.lua;spec/?.lua;" .. package.path
 _G.redis = require "fake_redis"
 local utils = require "utils"
 
-before_each(function()
+local cleanup_redis = function()
   redis.call("del", "key")
-end)
+end
 
-after_each(function()
-  redis.call("del", "key")
-end)
+before_each(cleanup_redis)
+
+after_each(cleanup_redis)
 
 describe("add_point", function()
   it("should add metric point to redis ang get value back", function()
@@ -173,5 +173,28 @@ describe("last window range", function()
     assert.same({100200, 100250}, utils.last_window_range(100290, 50))
     assert.same({100250, 100300}, utils.last_window_range(100300, 50))
     assert.same({100250, 100300}, utils.last_window_range(100310, 50))
+  end)
+end)
+
+describe("distributions", function()
+  it("should return an empty list if there is no datapoint", function()
+    assert.same({}, utils.distributions("key"))
+  end)
+
+  it("should compute distribution from timeseries", function()
+    local w_size = 20
+    local cf = utils.create_bin_classifier({}, 10, 0, 100)
+    for i = 6, 110 do
+      utils.add_value("key", 100000 + i, i)
+    end
+
+    local distributions = utils.distributions("key", cf, 100000 + 106, w_size)
+    assert.same(5, #distributions)
+    assert.same(10, #distributions[1])
+    assert.same({5/15, 10/15, 0, 0, 0, 0, 0, 0, 0, 0}, distributions[1])
+    assert.same({0, 0, 0.5, 0.5, 0, 0, 0, 0, 0, 0}, distributions[2])
+    assert.same({0, 0, 0, 0, 0.5, 0.5, 0, 0, 0, 0}, distributions[3])
+    assert.same({0, 0, 0, 0, 0, 0, 0.5, 0.5, 0, 0}, distributions[4])
+    assert.same({0, 0, 0, 0, 0, 0, 0, 0, 0.5, 0.5}, distributions[5])
   end)
 end)
