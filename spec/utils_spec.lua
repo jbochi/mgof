@@ -117,4 +117,17 @@ describe("mgof_last_window", function()
     end
     assert.falsy(utils.mgof_last_window(elements, cf, 10, options))
   end)
+
+  it("should be true for anomal window", function()
+    local cf = utils.create_bin_classifier({}, 10, 0, 10)
+    local elements = {}
+    local options = {w_size=10, confidence=95}
+    for i = 1,100 do
+      elements[#elements + 1] = 4 + i/100
+    end
+    for i = 1, 10 do
+      elements[#elements + 1] = 9
+    end
+    assert.truthy(utils.mgof_last_window(elements, cf, 10, options))
+  end)
 end)
