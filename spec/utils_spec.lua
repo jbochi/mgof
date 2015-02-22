@@ -51,11 +51,11 @@ describe("distribution", function()
   it("should return percentile of values in each bin", function()
     local n_bins = 4
     local cf = utils.create_bin_classifier({}, n_bins, 0, 100)
-    assert.same({0, 0, 0, 0}, utils.distribution({}, n_bins, cf))
-    assert.same({1, 0, 0, 0}, utils.distribution({1}, n_bins, cf))
-    assert.same({0, 0, 0, 1}, utils.distribution({90}, n_bins, cf))
-    assert.same({0.5, 0, 0, 0.5}, utils.distribution({1, 90}, n_bins, cf))
-    assert.same({0.25, 0.5, 0, 0.25}, utils.distribution({1, 40, 45, 90}, n_bins, cf))
+    assert.same({0, 0, 0, 0}, utils.distribution({}, cf))
+    assert.same({1, 0, 0, 0}, utils.distribution({1}, cf))
+    assert.same({0, 0, 0, 1}, utils.distribution({90}, cf))
+    assert.same({0.5, 0, 0, 0.5}, utils.distribution({1, 90}, cf))
+    assert.same({0.25, 0.5, 0, 0.25}, utils.distribution({1, 40, 45, 90}, cf))
   end)
 
   it("should use given offset and size", function()
@@ -65,7 +65,7 @@ describe("distribution", function()
         1, 2, 3, 4, 5, 6, 7, 8, 9, -- ignored
         1, 40, 45, 90,
         1, 2, 3, 4, 5, 6, 7, 8, 9 -- ignored
-      }, n_bins, cf, 10, 4))
+      }, cf, 10, 4))
   end)
 end)
 
@@ -103,5 +103,18 @@ describe("chi_square_test", function()
     assert.truthy(utils.chi_square_test(16.2, 1, 99))
     assert.falsy(utils.chi_square_test(4.8696, 3, 95))
     assert.falsy(utils.chi_square_test(1.1683, 1, 95))
+  end)
+end)
+
+
+describe("mgof_last_window", function()
+  it("should be false for steady distribution", function()
+    local cf = utils.create_bin_classifier({}, 10, 0, 10)
+    local elements = {}
+    local options = {w_size=10, confidence=95}
+    for i = 1,100 do
+      elements[#elements + 1] = 4
+    end
+    assert.falsy(utils.mgof_last_window(elements, cf, 10, options))
   end)
 end)

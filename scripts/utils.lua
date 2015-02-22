@@ -12,6 +12,13 @@ utils.time_series_to_values = function(time_series)
   return time_series
 end
 
+local classifier_mt = {
+  __call = function(self, value)
+    return math.max(1, math.min(self.n_bins,
+      math.ceil((value - self.min) / self.step_size)))
+  end
+}
+
 utils.create_bin_classifier = function(time_series, n_bins, min, max)
   if min == nil or max == nil then
     for i = 1, #time_series do
@@ -23,14 +30,16 @@ utils.create_bin_classifier = function(time_series, n_bins, min, max)
       end
     end
   end
-  local step_size = (max - min) / n_bins
-  local classifier = function(value)
-    return math.min(math.max(1, math.ceil((value - min) / step_size)), n_bins)
-  end
+  local classifier = {
+    min=min,
+    n_bins=n_bins,
+    step_size=(max - min) / n_bins
+  }
+  setmetatable(classifier, classifier_mt)
   return classifier
 end
 
-utils.distribution = function(time_series, n_bins, classifier, offset, size)
+utils.distribution = function(time_series, classifier, offset, size)
   offset = offset or 1
   size = size or (#time_series - offset + 1)
   local p = {}
@@ -38,7 +47,7 @@ utils.distribution = function(time_series, n_bins, classifier, offset, size)
     local bin = classifier(time_series[i])
     p[bin] = (p[bin] or 0) + 1
   end
-  for i = 1, n_bins do
+  for i = 1, classifier.n_bins do
     if p[i] == nil then
       p[i] = 0
     else
@@ -80,7 +89,7 @@ utils.mgof_windows = function(elements, classifier, options)
     anomaly = false
     c[m] = 0
     local size = math.min(options.w_size, #elements - w_start)
-    local p_observed = utils.distribution(elements, options.n_bins, classifier, w_start, size)
+    local p_observed = utils.distribution(elements, classifier, w_start, size)
     if m == 1 then
       c[m] = c[m] + 1
     else
@@ -93,7 +102,7 @@ utils.mgof_windows = function(elements, classifier, options)
           best_window_index = i
         end
       end
-      if not utils.chi_square_test(best_test_value, options.n_bins - 1, options.confidence) then
+      if not utils.chi_square_test(best_test_value, classifier.n_bins - 1, options.confidence) then
         c[best_window_index] = c[best_window_index] + 1
         anomaly = c[best_window_index] < options.c_th
       else
@@ -103,16 +112,16 @@ utils.mgof_windows = function(elements, classifier, options)
     p[m] = p_observed
     m = m + 1
   end
-  return {(anomaly and 1 or 0), tostring(best_test_value)}
+  return anomaly
 end
 
-utils.mgof_last_window = function(elements, classifier, w_size)
+utils.mgof_last_window = function(elements, classifier, w_size, options)
   -- mgof of last window against all other datapoints distribution
-  local p = distribution(elements, n_bins, classifier, 1, #elements - w_size)
-  local p_observed = distribution(elements, n_bins, classifier, #elements - w_size, w_size)
-  local test_value = chi_square_test_value(p_observed, p, w_size)
-  local anomaly = chi_square_test(test_value, n_bins - 1, confidence)
-  return {(anomaly and 1 or 0), tostring(test_value)}
+  local p = utils.distribution(elements, classifier, 1, #elements - options.w_size)
+  local p_observed = utils.distribution(elements, classifier, #elements - options.w_size, options.w_size)
+  local test_value = utils.chi_square_test_value(p_observed, p, options.w_size)
+  local anomaly = utils.chi_square_test(test_value, classifier.n_bins - 1, options.confidence)
+  return anomaly
 end
 
 return utils

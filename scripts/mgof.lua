@@ -4,7 +4,7 @@ local options = {}
 local key = KEYS[1]
 local min_value = tonumber(ARGV[1])         -- min timeseries value
 local max_value = tonumber(ARGV[2])         -- max timeseries value
-options.n_bins = tonumber(ARGV[3]) or 10      -- number of bins: between 1 and 10
+local n_bins = tonumber(ARGV[3]) or 10      -- number of bins: between 1 and 10
 options.w_size = tonumber(ARGV[4]) or 60      -- window size
 options.confidence = tonumber(ARGV[5]) or 99  -- test confidence (95 or 99)
 options.c_th = tonumber(ARGV[6]) or 1         -- c_th is a threshold
@@ -12,6 +12,7 @@ options.c_th = tonumber(ARGV[6]) or 1         -- c_th is a threshold
                                             --   occurred frequently enough
 
 local elements = utils.time_series_to_values(redis.call('ZRANGEBYSCORE', key, '-inf', '+inf'))
-local classifier = utils.create_bin_classifier(elements, options.n_bins, min_value, max_value)
+local classifier = utils.create_bin_classifier(elements, n_bins, min_value, max_value)
+local anomaly = utils.mgof_windows(elements, classifier, options)
 
-return utils.mgof_windows(elements, classifier, options)
+return anomaly and 1 or 0 -- convert to integer for redis reply
