@@ -88,10 +88,20 @@ describe("relative_entropy", function()
   end)
 end)
 
-
 describe("chi_square_test_value", function()
   it("should return correct value", function()
     assert.equals(200 * math.log(1/0.4),
       utils.chi_square_test_value({0, 0, 1, 0}, {0.1, 0.4, 0.4, 0.1}, 100))
+  end)
+end)
+
+
+describe("chi_square_test", function()
+  it("should follow correct thresholds", function()
+    assert.truthy(utils.chi_square_test(65.7123, 1, 95))
+    assert.truthy(utils.chi_square_test(16.2, 1, 95))
+    assert.truthy(utils.chi_square_test(16.2, 1, 99))
+    assert.falsy(utils.chi_square_test(4.8696, 3, 95))
+    assert.falsy(utils.chi_square_test(1.1683, 1, 95))
   end)
 end)
