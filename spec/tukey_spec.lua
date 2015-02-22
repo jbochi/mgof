@@ -8,6 +8,23 @@ function run_in_context(filename, context)
 end
 
 describe("tukey", function()
+  it("should return false if there are not enough elements", function()
+    local context = {
+      KEYS={"TESTKEY"},
+      ARGV={1},
+      redis={
+        call=function(command, key, min, max)
+          assert(command == 'ZRANGEBYSCORE')
+          assert(key == "TESTKEY")
+          assert(min == "-inf")
+          assert(max == '+inf')
+          return {}
+        end
+    }}
+    local range = run_in_context("scripts/tukey.lua", context)
+    assert.falsy(range)
+  end)
+
   it("should return range", function()
     local context = {
       KEYS={"TESTKEY"},
