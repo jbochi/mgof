@@ -124,33 +124,36 @@ utils.mgof = function(distributions, classifier, options)
   local best_test_value
 
   for m, distribution in ipairs(distributions) do
-    anomaly = false
-    distribution.occurrences = distribution.occurrences or 0
-    local size = distribution.size
-    local p_observed = distribution.percentiles
-    if m == 1 then
-      distribution.occurrences = distribution.occurrences + 1
+    if distribution.anomaly ~= nil then
+      anomaly = distribution.anomaly
     else
-      best_test_value = math.huge
-      local best_window_index = 0
-      for i = 1, m - 1 do
-        local p = distributions[i].percentiles
-        local test_value = utils.chi_square_test_value(p_observed, p, size)
-        if test_value < best_test_value then
-          best_test_value = test_value
-          best_window_index = i
+      anomaly = false
+      local size = distribution.size
+      local p_observed = distribution.percentiles
+      if m == 1 then
+        distribution:inc_occurrences()
+      else
+        best_test_value = math.huge
+        local best_window_index = 0
+        for i = 1, m - 1 do
+          local p = distributions[i].percentiles
+          local test_value = utils.chi_square_test_value(p_observed, p, size)
+          if test_value < best_test_value then
+            best_test_value = test_value
+            best_window_index = i
+          end
+        end
+        local k = classifier.n_bins - 1
+        if not utils.chi_square_test(best_test_value, k, options.confidence) then
+          local best_distribution = distributions[best_window_index]
+          best_distribution:inc_occurrences()
+          anomaly = best_distribution.occurrences < options.c_th
+        else
+          anomaly = true
         end
       end
-      local k = classifier.n_bins - 1
-      if not utils.chi_square_test(best_test_value, k, options.confidence) then
-        local best_distribution = distributions[best_window_index]
-        best_distribution.occurrences = best_distribution.occurrences + 1
-        anomaly = best_distribution.occurrences < options.c_th
-      else
-        anomaly = true
-      end
+      distribution:set_anomaly(anomaly)
     end
-    distribution.anomaly = anomaly
   end
 
   return anomaly
@@ -160,6 +163,30 @@ utils.last_window_range = function(now, w_size)
   local stop = math.floor(now / w_size) * w_size
   local start = stop - w_size
   return {start, stop}
+end
+
+local distribution_mt = {
+  __index = {
+    inc_occurrences = function(self)
+      self.occurrences = self.occurrences + 1
+    end,
+    set_anomaly = function(self, anomaly)
+      self.anomaly = anomaly
+    end
+  }
+}
+
+utils.new_distribution = function(percentiles, size, start, stop)
+  local d = {
+    start=start,
+    stop=stop,
+    size=size,
+    percentiles=percentiles,
+    anomaly=nil,
+    occurrences=0
+  }
+  setmetatable(d, distribution_mt)
+  return d
 end
 
 utils.distributions = function(key, classifier, w_size)
@@ -185,13 +212,14 @@ utils.distributions = function(key, classifier, w_size)
       -- last window is now complete, since there is a datapoint after it
       local w_start = current_window_start_index
       local size = ix - current_window_start_index
-      distributions[#distributions + 1] = {
-        start=current_window_stop_ts - w_size,
-        stop=current_window_stop_ts,
-        size=size,
-        percentiles=utils.distribution(elements, classifier, w_start, size)
-      }
-
+      local start = current_window_stop_ts - w_size
+      local stop = current_window_stop_ts
+      distributions[#distributions + 1] = utils.new_distribution(
+        utils.distribution(elements, classifier, w_start, size),
+        size,
+        current_window_stop_ts - w_size,
+        current_window_stop_ts
+      )
       current_window_start_index = ix
       current_window_stop_ts = current_window_stop_ts + w_size
     end

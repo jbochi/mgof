@@ -148,10 +148,10 @@ describe("mgof", function()
     local elements = {}
     local options = {w_size=10, confidence=95, c_th=1}
     local distributions = {
-      {percentiles={0, 0, 0.5, 0.5, 0, 0, 0, 0, 0, 0}, size=60},
-      {percentiles={0, 0, 0.6, 0.4, 0, 0, 0, 0, 0, 0}, size=60},
-      {percentiles={0, 0, 0.55, 0.45, 0, 0, 0, 0, 0, 0}, size=60},
-      {percentiles={0, 0, 0.57, 0.43, 0, 0, 0, 0, 0, 0}, size=60}
+      utils.new_distribution({0, 0, 0.5, 0.5, 0, 0, 0, 0, 0, 0}, 20),
+      utils.new_distribution({0, 0, 0.6, 0.4, 0, 0, 0, 0, 0, 0}, 20),
+      utils.new_distribution({0, 0, 0.55, 0.45, 0, 0, 0, 0, 0, 0}, 20),
+      utils.new_distribution({0, 0, 0.57, 0.43, 0, 0, 0, 0, 0, 0}, 20)
     }
     assert.falsy(utils.mgof(distributions, cf, options))
   end)
@@ -161,10 +161,10 @@ describe("mgof", function()
     local elements = {}
     local options = {w_size=10, confidence=95, c_th=1}
     local distributions = {
-      {percentiles={0, 0, 0.5, 0.5, 0, 0, 0, 0, 0, 0}, size=60},
-      {percentiles={0, 0, 0.6, 0.4, 0, 0, 0, 0, 0, 0}, size=60},
-      {percentiles={0, 0, 0.55, 0.45, 0, 0, 0, 0, 0, 0}, size=60},
-      {percentiles={0, 0, 0.97, 0.03, 0, 0, 0, 0, 0, 0}, size=60}
+      utils.new_distribution({0, 0, 0.5, 0.5, 0, 0, 0, 0, 0, 0}, 20),
+      utils.new_distribution({0, 0, 0.3, 0.7, 0, 0, 0, 0, 0, 0}, 20),
+      utils.new_distribution({0, 0, 0.55, 0.45, 0, 0, 0, 0, 0, 0}, 20),
+      utils.new_distribution({0, 0, 0.97, 0.03, 0, 0, 0, 0, 0, 0}, 20)
     }
     assert.truthy(utils.mgof(distributions, cf, options))
   end)
