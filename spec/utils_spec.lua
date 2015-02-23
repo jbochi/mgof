@@ -1,9 +1,10 @@
 package.path = "scripts/?.lua;spec/?.lua;" .. package.path
 _G.redis = require "fake_redis"
+_G.cjson = require "cjson"
 local utils = require "utils"
 
 local cleanup_redis = function()
-  redis.call("del", "key")
+  redis.call("flushdb")
 end
 
 before_each(cleanup_redis)
@@ -148,10 +149,10 @@ describe("mgof", function()
     local elements = {}
     local options = {w_size=10, confidence=95, c_th=1}
     local distributions = {
-      utils.new_distribution({0, 0, 0.5, 0.5, 0, 0, 0, 0, 0, 0}, 20),
-      utils.new_distribution({0, 0, 0.6, 0.4, 0, 0, 0, 0, 0, 0}, 20),
-      utils.new_distribution({0, 0, 0.55, 0.45, 0, 0, 0, 0, 0, 0}, 20),
-      utils.new_distribution({0, 0, 0.57, 0.43, 0, 0, 0, 0, 0, 0}, 20)
+      utils.new_distribution({0, 0, 0.5, 0.5, 0, 0, 0, 0, 0, 0}, 20, "key"),
+      utils.new_distribution({0, 0, 0.6, 0.4, 0, 0, 0, 0, 0, 0}, 20, "key"),
+      utils.new_distribution({0, 0, 0.55, 0.45, 0, 0, 0, 0, 0, 0}, 20, "key"),
+      utils.new_distribution({0, 0, 0.57, 0.43, 0, 0, 0, 0, 0, 0}, 20, "key")
     }
     assert.falsy(utils.mgof(distributions, cf, options))
   end)
@@ -161,10 +162,10 @@ describe("mgof", function()
     local elements = {}
     local options = {w_size=10, confidence=95, c_th=1}
     local distributions = {
-      utils.new_distribution({0, 0, 0.5, 0.5, 0, 0, 0, 0, 0, 0}, 20),
-      utils.new_distribution({0, 0, 0.3, 0.7, 0, 0, 0, 0, 0, 0}, 20),
-      utils.new_distribution({0, 0, 0.55, 0.45, 0, 0, 0, 0, 0, 0}, 20),
-      utils.new_distribution({0, 0, 0.97, 0.03, 0, 0, 0, 0, 0, 0}, 20)
+      utils.new_distribution({0, 0, 0.5, 0.5, 0, 0, 0, 0, 0, 0}, 20, "key"),
+      utils.new_distribution({0, 0, 0.3, 0.7, 0, 0, 0, 0, 0, 0}, 20, "key"),
+      utils.new_distribution({0, 0, 0.55, 0.45, 0, 0, 0, 0, 0, 0}, 20, "key"),
+      utils.new_distribution({0, 0, 0.97, 0.03, 0, 0, 0, 0, 0, 0}, 20, "key")
     }
     assert.truthy(utils.mgof(distributions, cf, options))
   end)
@@ -197,6 +198,8 @@ describe("distributions", function()
     assert.same(100000, distributions[1].start)
     assert.same(100020, distributions[1].stop)
     assert.same(15, distributions[1].size)
+    assert.same(nil, distributions[1].anomaly)
+    assert.same(0, distributions[1].occurrences)
 
     assert.same(100080, distributions[5].start)
     assert.same(100100, distributions[5].stop)
@@ -208,5 +211,27 @@ describe("distributions", function()
     assert.same({0, 0, 0, 0, 0.5, 0.5, 0, 0, 0, 0}, distributions[3].percentiles)
     assert.same({0, 0, 0, 0, 0, 0, 0.5, 0.5, 0, 0}, distributions[4].percentiles)
     assert.same({0, 0, 0, 0, 0, 0, 0, 0, 0.5, 0.5}, distributions[5].percentiles)
+  end)
+
+  it("should cache distributions", function()
+    local w_size = 20
+    local cf = utils.create_bin_classifier({}, 10, 0, 100)
+    for i = 6, 110 do
+      utils.add_value("key", 100000 + i, i)
+    end
+
+    local distributions = utils.distributions("key", cf, w_size)
+
+    redis.call("del", "key")
+
+    local cached_distributions = utils.distributions("key", cf, w_size)
+
+    assert.same(5, #cached_distributions)
+    assert.same(10, #cached_distributions[1].percentiles)
+    assert.same(100000, distributions[1].start)
+    assert.same(100020, distributions[1].stop)
+    assert.same(15, distributions[1].size)
+    assert.same(nil, distributions[1].anomaly)
+    assert.same(0, distributions[1].occurrences)
   end)
 end)

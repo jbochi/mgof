@@ -19,7 +19,7 @@ local parse_value = function(str)
 end
 
 utils.add_value = function(key, timestamp, value)
-  return redis.call('zadd', key, timestamp, serialize_value(timestamp, value))
+  return redis.call("zadd", key, timestamp, serialize_value(timestamp, value))
 end
 
 utils.time_series = function(key, start, stop)
@@ -147,12 +147,14 @@ utils.mgof = function(distributions, classifier, options)
         if not utils.chi_square_test(best_test_value, k, options.confidence) then
           local best_distribution = distributions[best_window_index]
           best_distribution:inc_occurrences()
+          best_distribution:persist()
           anomaly = best_distribution.occurrences < options.c_th
         else
           anomaly = true
         end
       end
       distribution:set_anomaly(anomaly)
+      distribution:persist()
     end
   end
 
@@ -165,19 +167,29 @@ utils.last_window_range = function(now, w_size)
   return {start, stop}
 end
 
+local distribution_key = function(key)
+  return key .. ":distributions"
+end
+
 local distribution_mt = {
   __index = {
     inc_occurrences = function(self)
       self.occurrences = self.occurrences + 1
     end,
     set_anomaly = function(self, anomaly)
+      assert(self.anomaly == nil)
       self.anomaly = anomaly
+    end,
+    persist = function(self)
+      local ser = cjson.encode(self)
+      redis.call("zadd", distribution_key(self.key), self.start, ser)
     end
   }
 }
 
-utils.new_distribution = function(percentiles, size, start, stop)
+utils.new_distribution = function(percentiles, size, key, start, stop)
   local d = {
+    key=key,
     start=start,
     stop=stop,
     size=size,
@@ -189,10 +201,26 @@ utils.new_distribution = function(percentiles, size, start, stop)
   return d
 end
 
+local cached_distributions = function(key)
+  local distributions = redis.call('zrangebyscore', distribution_key(key), "-inf", "+inf")
+  for i = 1, #distributions do
+    distributions[i] = cjson.decode(distributions[i])
+    setmetatable(distributions[i], distribution_mt)
+  end
+  return distributions
+end
+
 utils.distributions = function(key, classifier, w_size)
+  local distributions = cached_distributions(key)
+  local start = "-inf"
+
+  if #distributions > 0 then
+    start = distributions[#distributions].stop
+  end
+
   local elements = utils.time_series(key, "-inf", "+inf")
   if #elements == 0 then
-    return {}
+    return distributions
   end
 
   local first_ts = elements[1][1]
@@ -200,7 +228,6 @@ utils.distributions = function(key, classifier, w_size)
   if current_window_stop_ts <= first_ts then
     current_window_stop_ts = current_window_stop_ts + w_size
   end
-  local distributions = {}
 
   local current_window_start_index = 1
 
@@ -213,13 +240,15 @@ utils.distributions = function(key, classifier, w_size)
       local w_start = current_window_start_index
       local size = ix - current_window_start_index
       local start = current_window_stop_ts - w_size
-      local stop = current_window_stop_ts
-      distributions[#distributions + 1] = utils.new_distribution(
+      local distribution = utils.new_distribution(
         utils.distribution(elements, classifier, w_start, size),
         size,
-        current_window_stop_ts - w_size,
+        key,
+        start,
         current_window_stop_ts
       )
+      distribution:persist()
+      distributions[#distributions + 1] = distribution
       current_window_start_index = ix
       current_window_stop_ts = current_window_stop_ts + w_size
     end
