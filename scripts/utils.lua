@@ -119,39 +119,38 @@ utils.mgof_last_window = function(elements, classifier, options)
 end
 
 -- mgof algorithm adapted from http://www.hpl.hp.com/techreports/2011/HPL-2011-8.pdf
-utils.mgof = function(elements, classifier, options)
-  local m = 1 -- tracks the current number of null hypothesis
-  local p = {} -- array of window distributions
-  local c = {} -- array that counts how many times a window was used to explain other
+utils.mgof = function(distributions, classifier, options)
   local anomaly
   local best_test_value
 
-  for w_start = 1, #elements, options.w_size + 1 do
+  for m, distribution in ipairs(distributions) do
     anomaly = false
-    c[m] = 0
-    local size = math.min(options.w_size, #elements - w_start)
-    local p_observed = utils.distribution(elements, classifier, w_start, size)
+    distribution.occurrences = distribution.occurrences or 0
+    local size = distribution.size
+    local p_observed = distribution.percentiles
     if m == 1 then
-      c[m] = c[m] + 1
+      distribution.occurrences = distribution.occurrences + 1
     else
       best_test_value = math.huge
       local best_window_index = 0
       for i = 1, m - 1 do
-        local test_value = utils.chi_square_test_value(p_observed, p[i], size)
+        local p = distributions[i].percentiles
+        local test_value = utils.chi_square_test_value(p_observed, p, size)
         if test_value < best_test_value then
           best_test_value = test_value
           best_window_index = i
         end
       end
-      if not utils.chi_square_test(best_test_value, classifier.n_bins - 1, options.confidence) then
-        c[best_window_index] = c[best_window_index] + 1
-        anomaly = c[best_window_index] < options.c_th
+      local k = classifier.n_bins - 1
+      if not utils.chi_square_test(best_test_value, k, options.confidence) then
+        local best_distribution = distributions[best_window_index]
+        best_distribution.occurrences = best_distribution.occurrences + 1
+        anomaly = best_distribution.occurrences < options.c_th
       else
         anomaly = true
       end
     end
-    p[m] = p_observed
-    m = m + 1
+    distribution.anomaly = anomaly
   end
 
   return anomaly
@@ -163,7 +162,7 @@ utils.last_window_range = function(now, w_size)
   return {start, stop}
 end
 
-utils.distributions = function(key, classifier, now, w_size)
+utils.distributions = function(key, classifier, w_size)
   local elements = utils.time_series(key, "-inf", "+inf")
   if #elements == 0 then
     return {}
@@ -190,7 +189,7 @@ utils.distributions = function(key, classifier, now, w_size)
         start=current_window_stop_ts - w_size,
         stop=current_window_stop_ts,
         size=size,
-        values=utils.distribution(elements, classifier, w_start, size)
+        percentiles=utils.distribution(elements, classifier, w_start, size)
       }
 
       current_window_start_index = ix

@@ -147,23 +147,26 @@ describe("mgof", function()
     local cf = utils.create_bin_classifier({}, 10, 0, 10)
     local elements = {}
     local options = {w_size=10, confidence=95, c_th=1}
-    for i = 1,100 do
-      elements[#elements + 1] = 4
-    end
-    assert.falsy(utils.mgof(elements, cf, options))
+    local distributions = {
+      {percentiles={0, 0, 0.5, 0.5, 0, 0, 0, 0, 0, 0}, size=60},
+      {percentiles={0, 0, 0.6, 0.4, 0, 0, 0, 0, 0, 0}, size=60},
+      {percentiles={0, 0, 0.55, 0.45, 0, 0, 0, 0, 0, 0}, size=60},
+      {percentiles={0, 0, 0.57, 0.43, 0, 0, 0, 0, 0, 0}, size=60}
+    }
+    assert.falsy(utils.mgof(distributions, cf, options))
   end)
 
   it("should be true if last window is anomalous", function()
     local cf = utils.create_bin_classifier({}, 10, 0, 10)
     local elements = {}
     local options = {w_size=10, confidence=95, c_th=1}
-    for i = 1,100 do
-      elements[#elements + 1] = 4 + i/100
-    end
-    for i = 1, 10 do
-      elements[#elements + 1] = 9
-    end
-    assert.truthy(utils.mgof(elements, cf, options))
+    local distributions = {
+      {percentiles={0, 0, 0.5, 0.5, 0, 0, 0, 0, 0, 0}, size=60},
+      {percentiles={0, 0, 0.6, 0.4, 0, 0, 0, 0, 0, 0}, size=60},
+      {percentiles={0, 0, 0.55, 0.45, 0, 0, 0, 0, 0, 0}, size=60},
+      {percentiles={0, 0, 0.97, 0.03, 0, 0, 0, 0, 0, 0}, size=60}
+    }
+    assert.truthy(utils.mgof(distributions, cf, options))
   end)
 end)
 
@@ -188,7 +191,7 @@ describe("distributions", function()
       utils.add_value("key", 100000 + i, i)
     end
 
-    local distributions = utils.distributions("key", cf, 100000 + 106, w_size)
+    local distributions = utils.distributions("key", cf, w_size)
     assert.same(5, #distributions)
 
     assert.same(100000, distributions[1].start)
@@ -199,11 +202,11 @@ describe("distributions", function()
     assert.same(100100, distributions[5].stop)
     assert.same(20, distributions[5].size)
 
-    assert.same(10, #distributions[1].values)
-    assert.same({5/15, 10/15, 0, 0, 0, 0, 0, 0, 0, 0}, distributions[1].values)
-    assert.same({0, 0, 0.5, 0.5, 0, 0, 0, 0, 0, 0}, distributions[2].values)
-    assert.same({0, 0, 0, 0, 0.5, 0.5, 0, 0, 0, 0}, distributions[3].values)
-    assert.same({0, 0, 0, 0, 0, 0, 0.5, 0.5, 0, 0}, distributions[4].values)
-    assert.same({0, 0, 0, 0, 0, 0, 0, 0, 0.5, 0.5}, distributions[5].values)
+    assert.same(10, #distributions[1].percentiles)
+    assert.same({5/15, 10/15, 0, 0, 0, 0, 0, 0, 0, 0}, distributions[1].percentiles)
+    assert.same({0, 0, 0.5, 0.5, 0, 0, 0, 0, 0, 0}, distributions[2].percentiles)
+    assert.same({0, 0, 0, 0, 0.5, 0.5, 0, 0, 0, 0}, distributions[3].percentiles)
+    assert.same({0, 0, 0, 0, 0, 0, 0.5, 0.5, 0, 0}, distributions[4].percentiles)
+    assert.same({0, 0, 0, 0, 0, 0, 0, 0, 0.5, 0.5}, distributions[5].percentiles)
   end)
 end)
