@@ -124,9 +124,7 @@ utils.mgof = function(distributions, classifier, options)
   local best_test_value
 
   for m, distribution in ipairs(distributions) do
-    if distribution.anomaly ~= nil then
-      anomaly = distribution.anomaly
-    else
+    if distribution.anomaly == nil then
       anomaly = false
       local size = distribution.size
       local p_observed = distribution.percentiles
@@ -155,6 +153,8 @@ utils.mgof = function(distributions, classifier, options)
       end
       distribution:set_anomaly(anomaly)
       distribution:persist()
+    else
+      anomaly = distribution.anomaly
     end
   end
 
@@ -182,7 +182,7 @@ local distribution_mt = {
     end,
     persist = function(self)
       local ser = cjson.encode(self)
-      redis.call("zadd", distribution_key(self.key), self.start, ser)
+      redis.call("hset", distribution_key(self.key), self.start, ser)
     end
   }
 }
@@ -202,10 +202,12 @@ utils.new_distribution = function(percentiles, size, key, start, stop)
 end
 
 local cached_distributions = function(key)
-  local distributions = redis.call('zrangebyscore', distribution_key(key), "-inf", "+inf")
-  for i = 1, #distributions do
-    distributions[i] = cjson.decode(distributions[i])
-    setmetatable(distributions[i], distribution_mt)
+  local distributions = {}
+  local values = redis.call('hgetall', distribution_key(key))
+  for i = 2, #values, 2 do
+    local distribution = cjson.decode(values[i])
+    setmetatable(distribution, distribution_mt)
+    distributions[#distributions + 1] = distribution
   end
   return distributions
 end
@@ -218,7 +220,7 @@ utils.distributions = function(key, classifier, w_size)
     start = distributions[#distributions].stop
   end
 
-  local elements = utils.time_series(key, "-inf", "+inf")
+  local elements = utils.time_series(key, start, "+inf")
   if #elements == 0 then
     return distributions
   end
