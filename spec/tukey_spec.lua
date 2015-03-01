@@ -5,9 +5,11 @@ function run_in_context(filename, context)
   setmetatable(context, {__index=_G})
   local scoped_f
   if setfenv then
-    scoped_f = load(string.dump(f))
+    -- lua 5.1
+    scoped_f = loadstring(string.dump(f))
     setfenv(scoped_f, context)
   else
+    -- lua 5.2
     scoped_f = load(string.dump(f), nil, nil, context)
   end
   return scoped_f()
