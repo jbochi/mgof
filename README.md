@@ -1,5 +1,7 @@
 #mgof
 
+[![Build Status][badge-travis-image]][badge-travis-url]
+
 mgof stands for Multinomial Goodness of Fit. It is an Anomaly Detection algorithm for time series stored in Redis.
 
 The algorithm is based on the paper ["Statistical Techniques for Online Anomaly Detection in Data Centers"](http://www.hpl.hp.com/techreports/2011/HPL-2011-8.html).
@@ -32,3 +34,6 @@ This is a work in progress and will propably be just an academic project. Consid
 
 - See integration and unit tests dependencies
 - Run `make test`
+
+[badge-travis-url]: https://travis-ci.org/jbochi/mgof
+[badge-travis-image]: https://img.shields.io/travis/jbochi/mgof.svg?style=flat
