@@ -6,4 +6,19 @@ local redis = {
   end
 }
 
+function unhashfy(obj, method)
+  old_method = obj[method]
+  obj[method] = function(...)
+    local hash = old_method(...)
+    local result = {}
+    for k, v in pairs(hash) do
+      result[#result + 1] = k
+      result[#result + 1] = v
+    end
+    return result
+  end
+end
+
+unhashfy(client, "hgetall")
+
 return redis
