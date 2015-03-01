@@ -20,7 +20,7 @@ This is a work in progress and will propably be just an academic project. Consid
 ###Lua unit and functional tests
 
 - Run redis locally (WARNING: db will be flushed)
-- Install [busted](http://olivinelabs.com/busted/) and lua cjson rock
+- Install [busted](http://olivinelabs.com/busted/) and lua-cjson rock
 - Run make `make test_lua`
 
 
