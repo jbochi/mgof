@@ -3,11 +3,13 @@ import pytest
 import redis
 import random
 import time
-
+import os
 
 TEST_KEY = "test_key"
-r = redis.StrictRedis(host='localhost', port=6379)
+REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
+REDIS_PORT = int(os.getenv("REDIS_PORT", 6379))
 
+r = redis.StrictRedis(host=REDIS_HOST, port=REDIS_PORT)
 
 def setup_function(function):
     r.flushdb()
@@ -15,7 +17,7 @@ def setup_function(function):
 
 @pytest.fixture
 def a():
-    return mgof.AnomalyDetector()
+    return mgof.AnomalyDetector(host=REDIS_HOST, port=REDIS_PORT)
 
 
 def test_post_ang_get_metric_back(a):
@@ -31,7 +33,6 @@ def test_should_use_current_timestamp_for_metric(a):
 
 def test_get_metric_should_return_values_in_specified_range(a):
     ts = 14000000
-    a = mgof.AnomalyDetector()
     a.post_metric(key=TEST_KEY, value=40.0, timestamp=ts)
 
     assert a.get_time_series(key=TEST_KEY) == [[ts, 40.0]]

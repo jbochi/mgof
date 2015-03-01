@@ -1,5 +1,10 @@
 local redis_driver = require "redis"
-local client = redis_driver.connect('127.0.0.1', 6379)
+
+local REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
+local REDIS_PORT = tonumber(os.getenv("REDIS_PORT", 6379))
+
+
+local client = redis_driver.connect(REDIS_HOST, REDIS_PORT)
 local redis = {
   call = function(command, ...)
     return client[command](client, ...)

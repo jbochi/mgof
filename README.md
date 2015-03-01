@@ -18,16 +18,17 @@ mgof is an academic research project still in progress. Consider using
 
 ##Running tests
 
+Redis should be running locally at the default port (6379) or available at `REDIS_HOST` and `REDIS_PORT`.
+
+WARNING: The Redis db will be flushed
+
 ###Lua unit and functional tests
 
-- Run redis locally (WARNING: db will be flushed)
 - Install [busted](http://olivinelabs.com/busted/) and lua-cjson rock
 - Run make `make test_lua`
 
-
 ###Python integration tests
 
-- Run redis locally (WARNING: db will be flushed)
 - Run `make install_dev`
 - Run `make test_python`
 

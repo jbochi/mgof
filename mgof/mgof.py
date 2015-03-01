@@ -8,7 +8,7 @@ import re
 
 class AnomalyDetector():
     def __init__(self, host='localhost', port=6379):
-        self.r = redis.StrictRedis(host=host, port=port)
+        self.r = redis.StrictRedis(host=host, port=port, socket_timeout=1)
         self.async_available = self._async_available()
         self.post_metric_script = self._load_script("post_metric", async=False)
         self.tukey_script = self._load_script("tukey")
