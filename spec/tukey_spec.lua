@@ -3,7 +3,13 @@ package.path = "scripts/?.lua;spec/?.lua;" .. package.path
 function run_in_context(filename, context)
   local f = assert(loadfile(filename))
   setmetatable(context, {__index=_G})
-  local scoped_f = load(string.dump(f), nil, nil, context)
+  local scoped_f
+  if setfenv then
+    scoped_f = load(string.dump(f))
+    setfenv(scoped_f, context)
+  else
+    scoped_f = load(string.dump(f), nil, nil, context)
+  end
   return scoped_f()
 end
 
