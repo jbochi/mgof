@@ -1,5 +1,4 @@
-mgof
-====
+#mgof
 
 mgof stands for Multinomial Goodness of Fit. It is an Anomaly Detection algorithm for time series stored in Redis.
 
@@ -14,15 +13,22 @@ This is a work in progress and will propably be just an academic project. Consid
 [morgoth](https://github.com/nvcook42/morgoth) for real world scenarios.
 
 
-Running integration tests
--------------------------
+##Running tests
 
-- Run parallel redis locally
-- Install python dependencies: `pip install -r requirements-dev.txt`
-- py.test
+###Lua unit and functional tests
+
+- Run redis locally (WARNING: db will be flushed)
+- Install [busted](http://olivinelabs.com/busted/)
+- Run make `make test_lua`
 
 
-Unit tests
-----------
+###Python integration tests
 
-- Run [busted](http://olivinelabs.com/busted/)
+- Run redis locally (WARNING: db will be flushed)
+- Run `make install_dev`
+- Run `make test_python`
+
+###Testing everything
+
+- See integration and unit tests dependencies
+- Run `make test`

@@ -10,7 +10,7 @@ r = redis.StrictRedis(host='localhost', port=6379)
 
 
 def setup_function(function):
-    r.delete(TEST_KEY)
+    r.flushdb()
 
 
 @pytest.fixture
