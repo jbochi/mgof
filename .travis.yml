@@ -14,7 +14,7 @@ install:
 services:
   - redis
 
-script: "make test"
+script: "make install_dev; make test"
 
 notifications:
   recipients:
