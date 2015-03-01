@@ -8,6 +8,7 @@ install_dependencies:
 
 test_lua:
 	@echo "Testing lua..."
+	@set env -e
 	@busted
 
 test_python:
