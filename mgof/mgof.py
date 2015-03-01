@@ -9,10 +9,21 @@ import re
 class AnomalyDetector():
     def __init__(self, host='localhost', port=6379):
         self.r = redis.StrictRedis(host=host, port=port)
+        self.async_available = self._async_available()
         self.post_metric_script = self._load_script("post_metric", async=False)
         self.tukey_script = self._load_script("tukey")
         self.window_anomaly_script = self._load_script("mgof")
         self.get_values_script = self._load_script("get_values")
+
+    def _async_available(self):
+        available = False
+        try:
+            self.r.execute_command("EVALSHAASYNC")
+        except redis.exceptions.ResponseError as e:
+            available = (e.message == "wrong number of arguments for 'evalshaasync' command")
+        if not available:
+            print("WARNING: Async scripts disabled. Use parallel redis!")
+        return available
 
     def _register_async_script(self, script):
         return AsyncScript(self.r, script)
@@ -29,6 +40,7 @@ class AnomalyDetector():
         return content
 
     def _load_script(self, script_name, async=True):
+        async = self.async_available and async
         content = self._get_script_content(script_name)
         if async:
             return self._register_async_script(content)
