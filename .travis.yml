@@ -1,9 +1,5 @@
 language: python
 
-env:
-  - LUA=""
-  - LUA="luajit"
-
 branches:
   only:
     - master
