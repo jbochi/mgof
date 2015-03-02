@@ -3,6 +3,7 @@ import datetime
 import os
 import sys
 import matplotlib.pyplot as plt
+import pandas as pd
 
 path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(path)
@@ -24,7 +25,11 @@ def main():
     timestamps = [datetime.datetime.fromtimestamp(time) for time, _ in series]
     values = [v for _, v in series]
 
-    plt.plot(timestamps, values)
+    df = pd.DataFrame(values, index=timestamps,columns=[args.key])
+    avgs = df.resample('5min', how='max')
+
+    plt.figure()
+    avgs.plot()
     plt.show()
 
 
