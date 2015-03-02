@@ -27,11 +27,16 @@ def main():
     url = "http://{graphite_host}/render/".format(
         graphite_host=args.graphite_host,
     )
-    datapoints = requests.get(url, params={
+    params = {
         "target": args.metric,
-        "from": args.start or "",
         "format": "json"
-    }).json()[0]["datapoints"]
+    }
+    if args.start:
+        params["from"] = args.start
+    request = requests.get(url, params=params)
+    print "Downloading data from {}".format(request.url)
+
+    datapoints = request.json()[0]["datapoints"]
     key = args.key or args.metric
     print "Importing {} datapoints from {} to {}".format(
         len(datapoints), args.metric, key)
