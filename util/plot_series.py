@@ -1,5 +1,5 @@
 import argparse
-import datetime
+from datetime import datetime
 import os
 import sys
 import matplotlib.pyplot as plt
@@ -17,19 +17,32 @@ parser.add_argument('--redis_host', "-r", type=str, default="localhost",
 parser.add_argument('--redis_port', "-p", type=int, default=6379,
                    help='redis port')
 
+def to_df(series, name):
+    timestamps = [datetime.fromtimestamp(time) for time, _ in series]
+    values = [v for _, v in series]
+    df = pd.DataFrame(values, index=timestamps,columns=[name])
+    avgs = df.resample('5min', how='max')
+    return avgs
+
 def main():
     args = parser.parse_args()
     detector = mgof.AnomalyDetector(host=args.redis_host, port=args.redis_port)
     series = detector.get_time_series(args.key)
+    anomalies = [map(datetime.fromtimestamp, r) for r in detector.anomalous_windows(args.key)]
 
-    timestamps = [datetime.datetime.fromtimestamp(time) for time, _ in series]
-    values = [v for _, v in series]
+    df = to_df(series, args.key)
+    max_value = df.max()[args.key]
+    print max_value
 
-    df = pd.DataFrame(values, index=timestamps,columns=[args.key])
-    avgs = df.resample('5min', how='max')
+    def is_anomaly(t):
+        if any(s <= t <= e for s, e in anomalies):
+            return max_value
+        return 0
+
+    df["anomaly"] = [is_anomaly(t) for t in df.index]
 
     plt.figure()
-    avgs.plot()
+    df.plot()
     plt.show()
 
 
