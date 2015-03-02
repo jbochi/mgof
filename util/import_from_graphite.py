@@ -12,6 +12,8 @@ parser.add_argument('graphite_host', type=str,
                    help='graphite host')
 parser.add_argument('metric', type=str,
                    help='graphite metric')
+parser.add_argument('--start', "-s", type=str, default="",
+                   help='initial timestamp')
 parser.add_argument('--key', "-k", type=str, default=None,
                    help='redis key')
 parser.add_argument('--redis_host', "-r", type=str, default="localhost",
@@ -22,11 +24,14 @@ parser.add_argument('--redis_port', "-p", type=int, default=6379,
 def main():
     args = parser.parse_args()
     detector = mgof.AnomalyDetector(host=args.redis_host, port=args.redis_port)
-    url = "http://{graphite_host}/render/?target={metric}&format=json".format(
+    url = "http://{graphite_host}/render/".format(
         graphite_host=args.graphite_host,
-        metric=args.metric
     )
-    datapoints = requests.get(url).json()[0]["datapoints"]
+    datapoints = requests.get(url, params={
+        "target": args.metric,
+        "from": args.start or "",
+        "format": "json"
+    }).json()[0]["datapoints"]
     key = args.key or args.metric
     print "Importing {} datapoints from {} to {}".format(
         len(datapoints), args.metric, key)

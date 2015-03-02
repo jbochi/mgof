@@ -47,7 +47,7 @@ WARNING: The Redis db will be flushed
 
 ### Import data from graphite
 
-`python util/import_from_graphite.py graphite.example.com "live.server.request_time.mean" --key request_time`
+`python util/import_from_graphite.py graphite.example.com "live.server.request_time.mean" --key request_time  --start "20150301"`
 
 ### Plot data
 
