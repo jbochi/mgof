@@ -235,3 +235,40 @@ describe("distributions", function()
     assert.same(0, distributions[1].occurrences)
   end)
 end)
+
+
+describe("anomalies", function()
+  it("should return an empty list if there is no anomaly", function()
+    assert.same({}, utils.anomalous_windows({}))
+  end)
+
+  it("should return start and stop for an anomaly", function()
+    local distributions = {
+      {start=0, stop=100, anomaly=false},
+      {start=100, stop=200, anomaly=false},
+      {start=200, stop=300, anomaly=true},
+      {start=300, stop=400, anomaly=false}
+    }
+    assert.same({{200, 300}}, utils.anomalous_windows(distributions))
+  end)
+
+  it("should return start and stop if there is no anomaly", function()
+    local distributions = {
+      {start=0, stop=100, anomaly=false},
+      {start=100, stop=200, anomaly=false},
+      {start=200, stop=300, anomaly=false},
+      {start=300, stop=400, anomaly=false}
+    }
+    assert.same({}, utils.anomalous_windows(distributions))
+  end)
+
+  it("should return start and stop for each anomaly", function()
+    local distributions = {
+      {start=0, stop=100, anomaly=true},
+      {start=100, stop=200, anomaly=false},
+      {start=200, stop=300, anomaly=true},
+      {start=300, stop=400, anomaly=false}
+    }
+    assert.same({{0, 100}, {200, 300}}, utils.anomalous_windows(distributions))
+  end)
+end)

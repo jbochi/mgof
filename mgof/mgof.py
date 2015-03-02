@@ -16,6 +16,7 @@ class AnomalyDetector():
         self.tukey_script = self._load_script("tukey")
         self.window_anomaly_script = self._load_script("mgof")
         self.get_values_script = self._load_script("get_values")
+        self.anomalous_windows_script = self._load_script("anomalies")
 
     def _async_available(self):
         available = False
@@ -65,6 +66,9 @@ class AnomalyDetector():
         n_bins=10, window_size=60, confidence=99, c_th=1):
         return self.window_anomaly_script(keys=[key],
             args=[min_value, max_value, n_bins, window_size, confidence, c_th]) == 1
+
+    def anomalous_windows(self, key):
+        return self.anomalous_windows_script(keys=[key])
 
     def tukey_range(self, key, k=1):
         """Returns the min and max alert thresholds for a given k (# of stddev tolerance)"""

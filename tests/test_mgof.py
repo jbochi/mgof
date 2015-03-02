@@ -85,3 +85,25 @@ def test_tukey_range_should_be_close_to_avg_value(a):
     min_range, max_range = a.tukey_range(key=TEST_KEY)
     assert abs(min_range - 40) < 1.5
     assert abs(max_range - 60) < 1.5
+
+
+def test_return_empty_list_of_anomalies_for_normal_condition(a):
+    now = (int(time.time()) / 60) * 60
+    for ts in range(now - 600, now):
+        value = random.normalvariate(mu=50.0, sigma=1)
+        a.post_metric(key=TEST_KEY, value=value, timestamp=ts)
+    assert not a.is_window_anomalous(key=TEST_KEY,
+        min_value=0, max_value=100, n_bins=10, window_size=60)
+    assert a.anomalous_windows(key=TEST_KEY) == []
+
+
+def test_should_detect_anomalies(a):
+    now = (int(time.time()) / 60) * 60
+    for ts in range(now - 1200, now - 60):
+        value = random.normalvariate(mu=40.0, sigma=1.0)
+        a.post_metric(key=TEST_KEY, value=value, timestamp=ts)
+    for ts in range(now - 60, now):
+        value = random.normalvariate(mu=85.0, sigma=1.5)
+        a.post_metric(key=TEST_KEY, value=value, timestamp=ts)
+    assert a.is_window_anomalous(key=TEST_KEY, window_size=60)
+    assert a.anomalous_windows(key=TEST_KEY) != []

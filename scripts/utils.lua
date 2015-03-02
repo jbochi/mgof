@@ -201,7 +201,7 @@ utils.new_distribution = function(percentiles, size, key, start, stop)
   return d
 end
 
-local cached_distributions = function(key)
+utils.cached_distributions = function(key)
   local distributions = {}
   local values = redis.call('hgetall', distribution_key(key))
   for i = 2, #values, 2 do
@@ -216,7 +216,7 @@ local cached_distributions = function(key)
 end
 
 utils.distributions = function(key, classifier, w_size)
-  local distributions = cached_distributions(key)
+  local distributions = utils.cached_distributions(key)
   local start = "-inf"
 
   if #distributions > 0 then
@@ -260,6 +260,16 @@ utils.distributions = function(key, classifier, w_size)
   end
 
   return distributions
+end
+
+utils.anomalous_windows = function(distributions)
+  local result = {}
+  for _, distribution in ipairs(distributions) do
+    if distribution.anomaly then
+      result[#result + 1] = {distribution.start, distribution.stop}
+    end
+  end
+  return result
 end
 
 return utils
