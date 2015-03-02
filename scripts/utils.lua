@@ -177,7 +177,7 @@ local distribution_mt = {
       self.occurrences = self.occurrences + 1
     end,
     set_anomaly = function(self, anomaly)
-      assert(self.anomaly == nil)
+      assert(self.anomaly == nil and anomaly ~= nil)
       self.anomaly = anomaly
     end,
     persist = function(self)
@@ -209,6 +209,9 @@ local cached_distributions = function(key)
     setmetatable(distribution, distribution_mt)
     distributions[#distributions + 1] = distribution
   end
+  table.sort(distributions, function(d1, d2)
+    return d1.start < d2.start
+  end)
   return distributions
 end
 
