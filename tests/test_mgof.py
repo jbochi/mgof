@@ -58,18 +58,18 @@ def test_should_delete_old_values(a):
 
 
 def test_should_detect_anomalies(a):
-    now = int(time.time())
-    for ts in range(now - 600, now - 60):
-        value = random.normalvariate(mu=50.0, sigma=10.0)
+    now = (int(time.time()) / 60) * 60
+    for ts in range(now - 1200, now - 60):
+        value = random.normalvariate(mu=40.0, sigma=5.0)
         a.post_metric(key=TEST_KEY, value=value, timestamp=ts)
     for ts in range(now - 60, now):
-        value = random.normalvariate(mu=75.0, sigma=1.5)
+        value = random.normalvariate(mu=85.0, sigma=1.5)
         a.post_metric(key=TEST_KEY, value=value, timestamp=ts)
     assert a.is_window_anomalous(key=TEST_KEY, window_size=60)
 
 
 def test_should_not_detect_anomaly_on_normal_condition(a):
-    now = int(time.time())
+    now = (int(time.time()) / 60) * 60
     for ts in range(now - 600, now):
         value = random.normalvariate(mu=50.0, sigma=5)
         a.post_metric(key=TEST_KEY, value=value, timestamp=ts)
