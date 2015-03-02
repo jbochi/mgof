@@ -7,7 +7,7 @@ mgof stands for Multinomial Goodness of Fit. It is an Anomaly Detection system b
 The algorithm is based on the paper ["Statistical Techniques for Online Anomaly Detection in Data Centers"](http://www.hpl.hp.com/techreports/2011/HPL-2011-8.html).
 
 The anomaly detector is implemented with Lua scripts in Redis avoiding the need
-to fetch a time series for processing. This saves network bandwidth, but depending on the 
+to fetch a time series for processing. This saves network bandwidth, but depending on the
 length of the time series, the CPU usage can be high and block Redis.
 
 This is the perfect use case for the [parallel redis fork](https://github.com/jbochi/parallel_redis).
@@ -39,3 +39,14 @@ WARNING: The Redis db will be flushed
 
 [badge-travis-url]: https://travis-ci.org/jbochi/mgof
 [badge-travis-image]: https://img.shields.io/travis/jbochi/mgof.svg?style=flat
+
+
+## Utils
+
+### Import data from graphite
+
+`python util/import_from_graphite.py graphite.example.com "live.server.request_time.mean" --key request_time`
+
+### Plot data
+
+`python util/plot_series.py request_time`
