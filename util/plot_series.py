@@ -32,7 +32,6 @@ def main():
 
     df = to_df(series, args.key)
     max_value = df.max()[args.key]
-    print max_value
 
     def is_anomaly(t):
         if any(s <= t <= e for s, e in anomalies):
@@ -41,7 +40,6 @@ def main():
 
     df["anomaly"] = [is_anomaly(t) for t in df.index]
 
-    plt.figure()
     df.plot()
     plt.show()
 
