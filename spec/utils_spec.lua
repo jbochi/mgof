@@ -234,6 +234,15 @@ describe("distributions", function()
     assert.same(nil, distributions[1].anomaly)
     assert.same(0, distributions[1].occurrences)
   end)
+
+  it("should compute recompute distributions if window size changes", function()
+    local cf = utils.create_bin_classifier({}, 10, 0, 100)
+    for i = 1, 101 do
+      utils.add_value("key", 100000 + i, i)
+    end
+    assert.same(10, #utils.distributions("key", cf, 10))
+    assert.same(2, #utils.distributions("key", cf, 50))
+  end)
 end)
 
 

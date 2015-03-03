@@ -168,8 +168,12 @@ utils.last_window_range = function(now, w_size)
   return {start, stop}
 end
 
-local distribution_key = function(key)
+local distribution_cache_key = function(key)
   return key .. ":distributions"
+end
+
+local distribution_options_cache_key = function(key)
+  return key .. ":distributions:options"
 end
 
 local distribution_mt = {
@@ -183,7 +187,7 @@ local distribution_mt = {
     end,
     persist = function(self)
       local ser = cjson.encode(self)
-      redis.call("hset", distribution_key(self.key), self.start, ser)
+      redis.call("hset", distribution_cache_key(self.key), self.start, ser)
     end
   }
 }
@@ -202,9 +206,20 @@ utils.new_distribution = function(percentiles, size, key, start, stop)
   return d
 end
 
-utils.cached_distributions = function(key)
+local validate_cached_distributions = function(key, classifier, w_size)
+  local ser = cjson.encode({classifier=classifier, w_size=w_size})
+  local old_value = redis.call("getset", distribution_options_cache_key(key), ser)
+  if old_value and ser ~= old_value then
+    redis.call("del", distribution_cache_key(key))
+  end
+end
+
+utils.cached_distributions = function(key, classifier, w_size)
+  if classifier or w_size then
+    validate_cached_distributions(key, classifier, w_size)
+  end
   local distributions = {}
-  local values = redis.call('hgetall', distribution_key(key))
+  local values = redis.call('hgetall', distribution_cache_key(key))
   for i = 2, #values, 2 do
     local distribution = cjson.decode(values[i])
     setmetatable(distribution, distribution_mt)
@@ -217,7 +232,7 @@ utils.cached_distributions = function(key)
 end
 
 utils.distributions = function(key, classifier, w_size)
-  local distributions = utils.cached_distributions(key)
+  local distributions = utils.cached_distributions(key, classifier, w_size)
   local start = "-inf"
 
   if #distributions > 0 then
