@@ -4,7 +4,7 @@
 
 mgof stands for Multinomial Goodness of Fit. It is an Anomaly Detection system backed by Redis.
 
-The algorithm is based on the paper ["Statistical Techniques for Online Anomaly Detection in Data Centers"](http://www.hpl.hp.com/techreports/2011/HPL-2011-8.html).
+The algorithm is based on the paper ["Statistical Techniques for Online Anomaly Detection in Data Centers"](http://www.hpl.hp.com/techreports/2011/HPL-2011-8.pdf).
 
 The anomaly detector is implemented with Lua scripts in Redis avoiding the need
 to fetch a time series for processing. This saves network bandwidth, but depending on the
