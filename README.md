@@ -47,7 +47,11 @@ WARNING: The Redis db will be flushed
 
 ### Import data from graphite
 
-`python util/import_from_graphite.py graphite.example.com "live.server.request_time.mean" --key request_time  --start "20150301"`
+`python util/import_from_graphite.py graphite.example.com "live.server.request_time.mean" --key request_time  --start="-14days"`
+
+### Detect anomalies
+
+`python util/anomaly_detector.py request_time --min_value 0 --max_value 250000 --window_size 7200 --confidence="99.5" --redis_port=7000`
 
 ### Plot data
 
