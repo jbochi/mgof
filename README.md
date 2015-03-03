@@ -56,3 +56,5 @@ WARNING: The Redis db will be flushed
 ### Plot data
 
 `python util/plot_series.py request_time`
+
+![](https://raw.githubusercontent.com/jbochi/mgof/master/mgof.png)
