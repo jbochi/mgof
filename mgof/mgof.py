@@ -15,8 +15,10 @@ class AnomalyDetector():
         self.post_metric_script = self._load_script("post_metric", async=False)
         self.tukey_script = self._load_script("tukey")
         self.window_anomaly_script = self._load_script("mgof")
-        self.get_values_script = self._load_script("get_values")
-        self.anomalous_windows_script = self._load_script("anomalies")
+        # TODO: Scripts below should be async, but there is a bug
+        # in parallel redis for table return values in async scripts
+        self.get_values_script = self._load_script("get_values", async=False)
+        self.anomalous_windows_script = self._load_script("anomalies", async=False)
 
     def _async_available(self):
         available = False
