@@ -25,8 +25,8 @@ parser.add_argument('--max_value', "-x", type=int, default=1,
                    help='min value of time series')
 parser.add_argument('--window_size', "-w", type=int, default=60,
                    help='window size')
-parser.add_argument('--confidence', "-c", type=int, default=95,
-                   help='confidence level (95 or 99)')
+parser.add_argument('--confidence', "-c", type=float, default=95,
+                   help='confidence level (95, 99, or 99.5)')
 
 
 def main(key):
@@ -41,7 +41,7 @@ def main(key):
         max_value=args.max_value,
         window_size=args.window_size,
         confidence=args.confidence)
-    print("Anomaly (confidence 95%): ", anomaly)
+    print("Anomaly (confidence {}%): {}".format(args.confidence, anomaly))
 
 if __name__ == "__main__":
     main(sys.argv[1])

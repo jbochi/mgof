@@ -1,8 +1,9 @@
 local utils = {}
 
-local chi_square = {[99]={6.63, 9.21, 11.34, 13.28, 15.09, 16.81, 18.48, 20.09, 21.67},
-                    [95]={3.84, 5.99,  7.81,  9.49, 11.07, 12.59, 14.07, 15.51, 16.92}}
-
+-- values from http://flylib.com/books/3/287/1/html/2/images/xatab02.jpg
+local chi_square = {[99.5]={7.88, 10.60, 12.84, 14.86, 16.75, 18.55, 20.28, 21.95, 23.59},
+                      [99]={6.63,  9.21, 11.34, 13.28, 15.09, 16.81, 18.48, 20.09, 21.67},
+                      [95]={3.84,  5.99,  7.81,  9.49, 11.07, 12.59, 14.07, 15.51, 16.92}}
 
 local serialize_value = function(timestamp, value)
   -- we add the timestamp prefix becuase sorted sets elements
