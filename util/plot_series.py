@@ -16,12 +16,16 @@ parser.add_argument('--redis_host', "-r", type=str, default="localhost",
                     help='redis host')
 parser.add_argument('--redis_port', "-p", type=int, default=6379,
                    help='redis port')
+parser.add_argument('--agg_period', "-a", type=str, default="5min",
+                   help='redis port')
+parser.add_argument('--agg_how', "-w", type=str, default="mean",
+                   help='redis port')
 
-def to_df(series, name):
+def to_df(series, name, agg_period, agg_how):
     timestamps = [datetime.fromtimestamp(time) for time, _ in series]
     values = [v for _, v in series]
     df = pd.DataFrame(values, index=timestamps,columns=[name])
-    avgs = df.resample('5min', how='max')
+    avgs = df.resample(agg_period, how=agg_how)
     return avgs
 
 def main():
@@ -29,8 +33,7 @@ def main():
     detector = mgof.AnomalyDetector(host=args.redis_host, port=args.redis_port)
     series = detector.get_time_series(args.key)
     anomalies = [map(datetime.fromtimestamp, r) for r in detector.anomalous_windows(args.key)]
-
-    df = to_df(series, args.key)
+    df = to_df(series, args.key, args.agg_period, args.agg_how)
     max_value = df.max()[args.key]
 
     def is_anomaly(t):
