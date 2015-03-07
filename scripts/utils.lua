@@ -278,6 +278,7 @@ utils.distributions = function(key, classifier, w_size)
   end
 
   -- last window is a sliding window
+  -- TODO: Avoid extra query when possible
   local elements = utils.time_series(key, ts - w_size, "+inf")
   local distribution = utils.new_distribution(
     utils.distribution(elements, classifier),
