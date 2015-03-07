@@ -232,13 +232,15 @@ utils.cached_distributions = function(key, classifier, w_size)
 end
 
 utils.distributions = function(key, classifier, w_size)
-  local distributions = utils.cached_distributions(key, classifier, w_size)
   local start = "-inf"
 
+  -- get cached distributions
+  local distributions = utils.cached_distributions(key, classifier, w_size)
   if #distributions > 0 then
     start = distributions[#distributions].stop
   end
 
+  -- get new elements after cached distributions
   local elements = utils.time_series(key, start, "+inf")
   if #elements == 0 then
     return distributions
@@ -258,14 +260,14 @@ utils.distributions = function(key, classifier, w_size)
 
     if ts > current_window_stop_ts then
       -- last window is now complete, since there is a datapoint after it
-      local w_start = current_window_start_index
-      local size = ix - current_window_start_index
-      local start = current_window_stop_ts - w_size
+      -- add it to distributions list
+      local n_points = ix - current_window_start_index
       local distribution = utils.new_distribution(
-        utils.distribution(elements, classifier, w_start, size),
-        size,
+        utils.distribution(elements,
+          classifier, current_window_start_index, n_points),
+        n_points,
         key,
-        start,
+        current_window_stop_ts - w_size,
         current_window_stop_ts
       )
       distribution:persist()
