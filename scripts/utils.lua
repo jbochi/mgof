@@ -186,13 +186,15 @@ local distribution_mt = {
       self.anomaly = anomaly
     end,
     persist = function(self)
-      local ser = cjson.encode(self)
-      redis.call("hset", distribution_cache_key(self.key), self.start, ser)
+      if self.persistable then
+        local ser = cjson.encode(self)
+        redis.call("hset", distribution_cache_key(self.key), self.start, ser)
+      end
     end
   }
 }
 
-utils.new_distribution = function(percentiles, size, key, start, stop)
+utils.new_distribution = function(percentiles, size, key, start, stop, persist)
   local d = {
     key=key,
     start=start,
@@ -200,7 +202,8 @@ utils.new_distribution = function(percentiles, size, key, start, stop)
     size=size,
     percentiles=percentiles,
     anomaly=nil,
-    occurrences=0
+    occurrences=0,
+    persistable=persist
   }
   setmetatable(d, distribution_mt)
   return d
@@ -245,15 +248,13 @@ utils.distributions = function(key, classifier, w_size)
   if #elements == 0 then
     return distributions
   end
-  local first_ts = elements[1][1]
+  local first_ts = elements[1][1] + w_size
   local current_window_stop_ts = utils.last_window_range(first_ts, w_size)[2]
-  if current_window_stop_ts <= first_ts then
-    current_window_stop_ts = current_window_stop_ts + w_size
-  end
 
   local current_window_start_index = 1
+  local ts
   for ix, element in ipairs(elements) do
-    local ts = element[1]
+    ts = element[1]
     local value = element[2]
 
     if ts > current_window_stop_ts then
@@ -266,7 +267,8 @@ utils.distributions = function(key, classifier, w_size)
         n_points,
         key,
         current_window_stop_ts - w_size,
-        current_window_stop_ts
+        current_window_stop_ts,
+        true
       )
       distribution:persist()
       distributions[#distributions + 1] = distribution
@@ -274,6 +276,18 @@ utils.distributions = function(key, classifier, w_size)
       current_window_stop_ts = current_window_stop_ts + w_size
     end
   end
+
+  -- last window is a sliding window
+  local elements = utils.time_series(key, ts - w_size, "+inf")
+  local distribution = utils.new_distribution(
+    utils.distribution(elements, classifier),
+    #elements,
+    key,
+    elements[1][1],
+    elements[#elements][1],
+    false
+  )
+  distributions[#distributions + 1] = distribution
 
   return distributions
 end

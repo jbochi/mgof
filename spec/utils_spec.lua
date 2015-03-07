@@ -193,24 +193,33 @@ describe("distributions", function()
     end
 
     local distributions = utils.distributions("key", cf, w_size)
-    assert.same(5, #distributions)
+    assert.same(6, #distributions)
 
+    -- first window
     assert.same(100000, distributions[1].start)
     assert.same(100020, distributions[1].stop)
     assert.same(15, distributions[1].size)
     assert.same(nil, distributions[1].anomaly)
     assert.same(0, distributions[1].occurrences)
 
+    -- last window
     assert.same(100080, distributions[5].start)
     assert.same(100100, distributions[5].stop)
     assert.same(20, distributions[5].size)
 
+    -- sliding window
+    assert.same(100090, distributions[6].start)
+    assert.same(100110, distributions[6].stop)
+    assert.same(21, distributions[6].size)
+
+    -- distributions
     assert.same(10, #distributions[1].percentiles)
     assert.same({5/15, 10/15, 0, 0, 0, 0, 0, 0, 0, 0}, distributions[1].percentiles)
     assert.same({0, 0, 0.5, 0.5, 0, 0, 0, 0, 0, 0}, distributions[2].percentiles)
     assert.same({0, 0, 0, 0, 0.5, 0.5, 0, 0, 0, 0}, distributions[3].percentiles)
     assert.same({0, 0, 0, 0, 0, 0, 0.5, 0.5, 0, 0}, distributions[4].percentiles)
     assert.same({0, 0, 0, 0, 0, 0, 0, 0, 0.5, 0.5}, distributions[5].percentiles)
+    assert.same({0, 0, 0, 0, 0, 0, 0, 0, 1/21, 20/21}, distributions[6].percentiles)
   end)
 
   it("should cache distributions", function()
@@ -237,7 +246,7 @@ describe("distributions", function()
 
   it("should compute recompute distributions if window size changes", function()
     local cf = utils.create_bin_classifier({}, 10, 0, 100)
-    for i = 1, 101 do
+    for i = 1, 100 do
       utils.add_value("key", 100000 + i, i)
     end
     assert.same(10, #utils.distributions("key", cf, 10))
