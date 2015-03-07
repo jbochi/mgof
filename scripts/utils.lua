@@ -245,7 +245,6 @@ utils.distributions = function(key, classifier, w_size)
   if #elements == 0 then
     return distributions
   end
-
   local first_ts = elements[1][1]
   local current_window_stop_ts = utils.last_window_range(first_ts, w_size)[2]
   if current_window_stop_ts <= first_ts then
@@ -253,7 +252,6 @@ utils.distributions = function(key, classifier, w_size)
   end
 
   local current_window_start_index = 1
-
   for ix, element in ipairs(elements) do
     local ts = element[1]
     local value = element[2]
