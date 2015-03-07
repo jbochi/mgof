@@ -1,8 +1,9 @@
+import itertools
 import os
+import re
 import redis
 import time
 import types
-import re
 
 
 class AnomalyDetector():
@@ -55,6 +56,10 @@ class AnomalyDetector():
     def post_metric(self, key, value, timestamp=None):
         timestamp = timestamp or time.time()
         return self.post_metric_script(keys=[key], args=[str(timestamp), str(value)])
+
+    def post_metrics(self, key, values):
+        args = map(str, itertools.chain(*values.items()))
+        return self.post_metric_script(keys=[key], args=args)
 
     def get_time_series(self, key, start="-inf", stop="+inf"):
         elements = self.get_values_script(keys=[key], args=[start, stop])

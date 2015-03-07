@@ -20,9 +20,15 @@ def a():
     return mgof.AnomalyDetector(host=REDIS_HOST, port=REDIS_PORT)
 
 
-def test_post_ang_get_metric_back(a):
+def test_post_and_get_metric_back(a):
     a.post_metric(key=TEST_KEY, value=40.0, timestamp=14000000)
     assert a.get_time_series(key=TEST_KEY) == [[14000000, 40.0]]
+
+
+def test_post_metrics_and_get_metrics_back(a):
+    a.post_metrics(key=TEST_KEY, values={14000000: 40.0, 14000001: 41.0})
+    assert a.get_time_series(key=TEST_KEY) == [
+        [14000000, 40.0], [14000001, 41.0]]
 
 
 def test_should_use_current_timestamp_for_metric(a):

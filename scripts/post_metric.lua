@@ -1,7 +1,9 @@
 local utils = require("utils")
 
 local key = KEYS[1]
-local timestamp = tonumber(ARGV[1])
-local value = tonumber(ARGV[2])
 
-return utils.add_value(key, timestamp, value)
+for i = 1, #ARGV, 2 do
+  local timestamp = tonumber(ARGV[i])
+  local value = tonumber(ARGV[i + 1])
+  utils.add_value(key, timestamp, value)
+end
