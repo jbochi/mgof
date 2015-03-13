@@ -13,7 +13,7 @@ length of the time series, the CPU usage can be high and block Redis.
 This is the perfect use case for the [parallel redis fork](https://github.com/jbochi/parallel_redis).
 
 mgof is an academic research project still in progress. Consider using
-[morgoth](https://github.com/nvcook42/morgoth) if you need a more mature alternative.
+[morgoth](https://github.com/nvcook42/morgoth) or [skyline](https://github.com/etsy/skyline) if you need a more mature alternative.
 
 
 ##Running tests
