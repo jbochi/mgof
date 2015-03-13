@@ -33,9 +33,12 @@ def random_value(avg=LOAD_AVG, stddev=LOAD_STDDEV):
 def prepopulate(key):
     now = time.time()
     r.delete(key)
+    metrics = {}
     for delta in range(0, -TIME_SERIES_LENGTH_IN_SECONDS, -METRICS_INTERVAL_IN_SECONDS):
-        a.post_metric(key, random_value(), now + delta)
+        metrics[now + delta] = random_value()
         if delta % (1000 * METRICS_INTERVAL_IN_SECONDS) == 0:
+            a.post_metrics(key, metrics)
+            metrics = {}
             sys.stdout.write(".")
             sys.stdout.flush()
 
